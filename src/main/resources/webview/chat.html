@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Claude فارسی</title>
+  <style>
+/*__CSS__*/
+  </style>
+</head>
+<body>
+  <header id="topbar">
+    <div class="brand"><span class="dot" id="statusDot"></span><span>Claude فارسی</span></div>
+    <div class="actions">
+      <button id="btnNew" title="شروع گفتگوی جدید">گفتگوی جدید</button>
+      <button id="btnSettings" title="تنظیمات">⚙</button>
+    </div>
+  </header>
+
+  <main id="messages">
+    <div id="empty" class="empty">
+      <div class="logo">✳</div>
+      <h2>سلام! چطور می‌توانم کمک کنم؟</h2>
+      <p>سؤال خود را به فارسی بنویسید. Claude به پروژهٔ باز شما دسترسی دارد و می‌تواند فایل‌ها را بخواند و ویرایش کند.</p>
+      <div class="suggestions">
+        <button class="sugg">ساختار این پروژه را توضیح بده</button>
+        <button class="sugg">باگ‌های احتمالی کد را پیدا کن</button>
+        <button class="sugg">برای این پروژه یک README فارسی بنویس</button>
+      </div>
+      <p class="hint">نکته: کد را در ویرایشگر انتخاب کنید و با کلیک راست › Claude Farsi آن را بفرستید.</p>
+    </div>
+  </main>
+
+  <div id="status" class="status hidden"><span class="spinner"></span><span id="statusText">در حال فکر کردن…</span></div>
+
+  <footer id="composer">
+    <textarea id="input" dir="rtl" rows="1" placeholder="پیام خود را بنویسید… (ارسال: Enter — خط جدید: Shift+Enter)"></textarea>
+    <div class="composer-actions">
+      <button id="btnSend" class="primary" title="ارسال">ارسال</button>
+      <button id="btnStop" class="danger hidden" title="توقف">توقف</button>
+    </div>
+  </footer>
+
+  <script>
+/*__JS__*/
+  </script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<idea-plugin>
+    <id>ir.claudefa.intellij</id>
+    <name>Claude Farsi</name>
+    <vendor>Claude Farsi</vendor>
+
+    <description><![CDATA[
+    <p>Chat with <b>Claude Code</b> inside IntelliJ-based IDEs with full Persian (Farsi) / RTL support.</p>
+    <ul>
+      <li>Right-to-left chat panel with correct bidi rendering of mixed Persian/English text</li>
+      <li>Bundled Vazirmatn font</li>
+      <li>Code blocks stay left-to-right, with Copy and Insert-at-caret buttons</li>
+      <li>Send the editor selection to Claude, or ask Claude to explain it</li>
+      <li>Uses your locally installed Claude Code CLI (your own login / subscription)</li>
+    </ul>
+    <p dir="rtl">گفتگو با Claude Code داخل IDE با پشتیبانی کامل از زبان فارسی و راست‌به‌چپ.</p>
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="ClaudeFa"
+                    anchor="right"
+                    icon="AllIcons.Toolwindows.ToolWindowMessages"
+                    factoryClass="ir.claudefa.ui.ChatToolWindowFactory"/>
+
+        <applicationService serviceImplementation="ir.claudefa.settings.ClaudeFaSettings"/>
+
+        <applicationConfigurable parentId="tools"
+                                 instance="ir.claudefa.settings.ClaudeFaConfigurable"
+                                 id="ir.claudefa.settings"
+                                 displayName="Claude Farsi"/>
+
+        <notificationGroup id="Claude Farsi" displayType="BALLOON"/>
+    </extensions>
+
+    <actions>
+        <group id="ClaudeFa.EditorGroup" text="Claude Farsi" popup="true">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+            <action id="ClaudeFa.SendSelection"
+                    class="ir.claudefa.actions.SendSelectionAction"
+                    text="ارسال انتخاب به Claude"
+                    description="Add the selected code to the Claude chat input">
+                <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt shift K"/>
+            </action>
+            <action id="ClaudeFa.Explain"
+                    class="ir.claudefa.actions.ExplainSelectionAction"
+                    text="توضیح این کد"
+                    description="Ask Claude to explain the selected code in Persian"/>
+            <action id="ClaudeFa.Review"
+                    class="ir.claudefa.actions.ReviewSelectionAction"
+                    text="بررسی و پیشنهاد بهبود"
+                    description="Ask Claude to review the selected code"/>
+        </group>
+        <action id="ClaudeFa.Open"
+                class="ir.claudefa.actions.OpenChatAction"
+                text="Claude Farsi: باز کردن گفتگو"
+                description="Open the Claude Farsi chat">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt shift L"/>
+        </action>
+    </actions>
+</idea-plugin>
