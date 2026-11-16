@@ -14,8 +14,21 @@ class ClaudeFaSettings : PersistentStateComponent<ClaudeFaSettings.State> {
         var cliPath: String = ""
         /** Empty = Claude Code default model. e.g. "sonnet", "opus". */
         var model: String = ""
+        /** Empty = CLI default. low | medium | high | xhigh | max */
+        var effort: String = ""
         /** default | acceptEdits | plan | bypassPermissions */
-        var permissionMode: String = "acceptEdits"
+        var permissionMode: String = "default"
+        /** Open proposed edits in the IDE diff viewer automatically. */
+        var autoOpenDiff: Boolean = true
+        /** Share the current file / selection with Claude on every message. */
+        var shareSelection: Boolean = true
+        /** Guard: safety rules for tool calls. */
+        var guardEnabled: Boolean = true
+        var guardDisabledRules: List<String> = emptyList()
+        /** Exact commands / paths the user whitelisted from Guard. */
+        var guardWhitelist: List<String> = emptyList()
+        /** Keep the chat scrolled to the bottom while Claude writes. */
+        var autoFollow: Boolean = true
         /** Ask Claude to answer in Persian. */
         var respondInPersian: Boolean = true
         /** Replace Arabic ي/ك with Persian ی/ک before sending. */

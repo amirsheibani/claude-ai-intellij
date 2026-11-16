@@ -14,12 +14,18 @@ import javax.swing.SwingConstants
 class ChatToolWindowFactory : ToolWindowFactory, DumbAware {
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
-        toolWindow.stripeTitle = "Claude فارسی"
+        toolWindow.stripeTitle = "ClaudeFA"
         val factory = ContentFactory.getInstance()
-        if (!JBCefApp.isSupported()) {
+        val jcefSupported = try {
+            JBCefApp.isSupported()
+        } catch (e: LinkageError) {
+            false
+        }
+        if (!jcefSupported) {
             val label = JBLabel(
                 "<html><div dir='rtl' style='padding:16px'>این IDE از JCEF پشتیبانی نمی‌کند.<br>" +
-                    "از Help › Find Action › «Choose Boot Java Runtime» یک JBR با JCEF انتخاب کنید.</div></html>",
+                    "مطمئن شوید پلاگین «Web Browser (JCEF)» فعال است، یا از Help › Find Action › " +
+                    "«Choose Boot Java Runtime» یک JBR با JCEF انتخاب کنید.</div></html>",
                 SwingConstants.CENTER,
             )
             toolWindow.contentManager.addContent(factory.createContent(label, "", false))

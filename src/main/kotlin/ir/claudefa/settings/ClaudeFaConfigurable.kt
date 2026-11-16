@@ -9,7 +9,7 @@ import com.intellij.ui.dsl.builder.bindSelected
 import com.intellij.ui.dsl.builder.bindText
 import com.intellij.ui.dsl.builder.panel
 
-class ClaudeFaConfigurable : BoundConfigurable("Claude Farsi") {
+class ClaudeFaConfigurable : BoundConfigurable("ClaudeFA") {
 
     private val s get() = ClaudeFaSettings.get()
 
@@ -28,11 +28,17 @@ class ClaudeFaConfigurable : BoundConfigurable("Claude Farsi") {
             }
             row("حالت دسترسی:") {
                 comboBox(PERMISSION_MODES)
-                    .bindItem({ s.permissionMode }, { s.permissionMode = it ?: "acceptEdits" })
+                    .bindItem({ s.permissionMode }, { s.permissionMode = it ?: "default" })
                     .comment(
-                        "default: ابزارهای نیازمند تأیید رد می‌شوند · acceptEdits: ویرایش فایل‌ها مجاز · " +
+                        "default: برای هر ویرایش و دستور از شما اجازه گرفته می‌شود · acceptEdits: ویرایش فایل‌ها بدون پرسش · " +
                             "plan: فقط برنامه‌ریزی، بدون تغییر · bypassPermissions: همه چیز مجاز (با احتیاط)"
                     )
+            }
+            row {
+                checkBox("نمایش خودکار تغییرات پیشنهادی در Diff Viewer").bindSelected(s::autoOpenDiff)
+            }
+            row {
+                checkBox("اشتراک خودکار فایل باز و متن انتخاب‌شده با Claude").bindSelected(s::shareSelection)
             }
             row("پراکسی HTTPS:") {
                 textField()

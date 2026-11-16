@@ -8,6 +8,8 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.util.execution.ParametersListUtil
+import ir.claudefa.PluginLog
+import ir.claudefa.ide.IdeMcpServer
 import ir.claudefa.settings.ClaudeFaSettings
 import java.io.File
 import java.nio.charset.StandardCharsets.UTF_8
@@ -41,14 +43,18 @@ class ClaudeCliRunner(
         sessionId = null
     }
 
-    fun send(prompt: String) {
+    /**
+     * @param mcpConfigPath `--mcp-config` file of the IDE MCP server; when set, permission prompts
+     *   are routed to the IDE via `--permission-prompt-tool`.
+     */
+    fun send(prompt: String, mcpConfigPath: String? = null) {
         if (isRunning) return
         val s = ClaudeFaSettings.get()
         val exe = locateCli(s.cliPath)
         if (exe == null) {
             listener.onStartFailed(
                 "فایل اجرایی claude پیدا نشد. ابتدا Claude Code را نصب کنید " +
-                    "(npm install -g @anthropic-ai/claude-code) یا مسیر آن را در Settings › Tools › Claude Farsi وارد کنید."
+                    "(npm install -g @anthropic-ai/claude-code) یا مسیر آن را در Settings › Tools › ClaudeFA وارد کنید."
             )
             return
         }
@@ -59,10 +65,16 @@ class ClaudeCliRunner(
         workDir?.let { cmd.withWorkDirectory(it) }
 
         cmd.addParameters("-p", "--output-format", "stream-json", "--verbose", "--include-partial-messages")
-        if (s.permissionMode.isNotBlank() && s.permissionMode != "default") {
+        if (s.permissionMode.isNotBlank() && s.permissionMode != "default" && s.permissionMode != "manual") {
             cmd.addParameters("--permission-mode", s.permissionMode)
         }
+        if (mcpConfigPath != null) {
+            // --mcp-config is variadic, so it must be followed by another flag.
+            cmd.addParameters("--mcp-config", mcpConfigPath)
+            cmd.addParameters("--permission-prompt-tool", IdeMcpServer.PERMISSION_TOOL_FQN)
+        }
         if (s.model.isNotBlank()) cmd.addParameters("--model", s.model.trim())
+        if (s.effort.isNotBlank()) cmd.addParameters("--effort", s.effort.trim())
         if (s.respondInPersian) cmd.addParameters("--append-system-prompt", PERSIAN_SYSTEM_PROMPT)
         sessionId?.let { cmd.addParameters("--resume", it) }
         if (s.extraArgs.isNotBlank()) cmd.addParameters(ParametersListUtil.parse(s.extraArgs))
@@ -78,10 +90,13 @@ class ClaudeCliRunner(
             cmd.createProcess()
         } catch (e: Exception) {
             LOG.warn(e)
+            PluginLog.warn("process", "claude failed to start: ${e.message}")
             listener.onStartFailed("اجرای claude ناموفق بود: ${e.message}")
             return
         }
         process = p
+        PluginLog.info("process", "claude started: ${exe.substringAfterLast('/')} (${cmd.parametersList.list.size} args)" +
+            (sessionId?.let { " resume=${it.take(8)}" } ?: ""))
 
         val text = if (s.normalizeArabicChars) normalizePersian(prompt) else prompt
 
@@ -95,7 +110,12 @@ class ClaudeCliRunner(
         }
         app.executeOnPooledThread {
             p.errorStream.bufferedReader(UTF_8).useLines { lines ->
-                lines.forEach { if (it.isNotBlank()) listener.onStderr(it) }
+                lines.forEach {
+                    if (it.isNotBlank()) {
+                        PluginLog.debug("process", "stderr: $it")
+                        listener.onStderr(it)
+                    }
+                }
             }
         }
         app.executeOnPooledThread {
@@ -121,6 +141,7 @@ class ClaudeCliRunner(
             }
             val code = try { p.waitFor() } catch (e: InterruptedException) { -1 }
             if (process === p) process = null
+            PluginLog.info("process", "claude exited with code $code" + if (gotResult) "" else " (no result)")
             listener.onExit(code, gotResult)
         }
     }

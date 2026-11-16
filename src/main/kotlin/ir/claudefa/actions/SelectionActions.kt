@@ -54,8 +54,33 @@ abstract class SelectionToClaudeAction : AnAction(), DumbAware {
     }
 }
 
-class SendSelectionAction : SelectionToClaudeAction() {
-    override val instruction: String? = null
+/**
+ * Inserts a file reference like `@src/Main.kt#L10-20` into the chat input — the same
+ * format as the official Claude Code plugin's Cmd+Option+K shortcut. Claude reads the lines itself.
+ */
+class SendSelectionAction : AnAction(), DumbAware {
+    override fun getActionUpdateThread() = ActionUpdateThread.BGT
+
+    override fun update(e: AnActionEvent) {
+        e.presentation.isEnabledAndVisible = e.project != null &&
+            (e.getData(CommonDataKeys.EDITOR) != null || e.getData(CommonDataKeys.VIRTUAL_FILE) != null)
+    }
+
+    override fun actionPerformed(e: AnActionEvent) {
+        val project = e.project ?: return
+        val file = e.getData(CommonDataKeys.VIRTUAL_FILE) ?: return
+        val editor = e.getData(CommonDataKeys.EDITOR)
+        val baseDir = project.guessProjectDir()
+        val relPath = baseDir?.let { VfsUtilCore.getRelativePath(file, it) } ?: file.path
+        val range = editor?.selectionModel?.takeIf { it.hasSelection() }?.let { sel ->
+            val doc = editor.document
+            val start = doc.getLineNumber(sel.selectionStart) + 1
+            val end = doc.getLineNumber(maxOf(sel.selectionStart, sel.selectionEnd - 1)) + 1
+            if (start == end) "#L$start" else "#L$start-$end"
+        }.orEmpty()
+        val ref = "@$relPath$range "
+        ChatToolWindowFactory.withPanel(project) { it.insertIntoInput(ref, inline = true) }
+    }
 }
 
 class ExplainSelectionAction : SelectionToClaudeAction() {

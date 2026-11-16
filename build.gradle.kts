@@ -28,7 +28,7 @@ kotlin {
 intellijPlatform {
     pluginConfiguration {
         id = "ir.claudefa.intellij"
-        name = "Claude Farsi"
+        name = "ClaudeFA"
         version = providers.gradleProperty("pluginVersion")
         ideaVersion {
             sinceBuild = providers.gradleProperty("pluginSinceBuild")
