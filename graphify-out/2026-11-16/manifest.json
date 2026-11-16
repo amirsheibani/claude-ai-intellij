@@ -24,9 +24,9 @@
     "semantic_hash": ""
   },
   "src/main/kotlin/ir/claudefa/cli/ClaudeCliRunner.kt": {
-    "mtime": 1794823096.608937,
-    "seen": 1794823383.973933,
-    "ast_hash": "068f52b0cf35d095cc7752ce33f16072",
+    "mtime": 1794824080.6167254,
+    "seen": 1794825526.340798,
+    "ast_hash": "14753e40ee47507652db7abc152ff76f",
     "semantic_hash": ""
   },
   "src/main/kotlin/ir/claudefa/settings/ClaudeFaConfigurable.kt": {
@@ -36,15 +36,15 @@
     "semantic_hash": ""
   },
   "src/main/kotlin/ir/claudefa/settings/ClaudeFaSettings.kt": {
-    "mtime": 1794823096.6086364,
-    "seen": 1794823383.973942,
-    "ast_hash": "e0dc1eae13a61fa7958fea63212aec87",
+    "mtime": 1794823952.6469526,
+    "seen": 1794825526.340811,
+    "ast_hash": "9af2b3ce3222bee2684e70d7d2459ed3",
     "semantic_hash": ""
   },
   "src/main/kotlin/ir/claudefa/ui/ChatPanel.kt": {
-    "mtime": 1794823096.609268,
-    "seen": 1794823383.973943,
-    "ast_hash": "c8225326db59c2b76a4e723b529d7fe2",
+    "mtime": 1794826345.9827511,
+    "seen": 1794826637.1488051,
+    "ast_hash": "222fe03fd71f1d0f59463e4c523bdf15",
     "semantic_hash": ""
   },
   "src/main/kotlin/ir/claudefa/ui/ChatToolWindowFactory.kt": {
@@ -54,9 +54,9 @@
     "semantic_hash": ""
   },
   "src/main/resources/webview/chat.js": {
-    "mtime": 1794823358.368575,
-    "seen": 1794823383.973946,
-    "ast_hash": "51c1695524b7dfa9a96bbbb56e351738",
+    "mtime": 1794826477.6633694,
+    "seen": 1794826637.148809,
+    "ast_hash": "3ab6a3b653b89147742f751fbe825d8b",
     "semantic_hash": ""
   },
   "README.md": {
@@ -72,9 +72,9 @@
     "semantic_hash": "88985b4355a8a44627dde041f10aba75"
   },
   "src/main/resources/webview/chat.html": {
-    "mtime": 1794823112.6475308,
-    "seen": 1794823383.9739509,
-    "ast_hash": "d7080e5e54c70dc613d338d18917bc9f",
+    "mtime": 1794826384.7628646,
+    "seen": 1794826637.148813,
+    "ast_hash": "e3e167a4088632d3259b2e37957792e0",
     "semantic_hash": ""
   },
   ".claude/settings.json": {
@@ -90,9 +90,9 @@
     "semantic_hash": ""
   },
   "src/main/kotlin/ir/claudefa/ide/IdeMcpServer.kt": {
-    "mtime": 1794822710.7033157,
-    "seen": 1794822734.7245178,
-    "ast_hash": "3e7dfdb3b292a216f9220fe432648b44",
+    "mtime": 1794824023.0309367,
+    "seen": 1794825526.340804,
+    "ast_hash": "598de7440e2717435e7e8a6439276a24",
     "semantic_hash": ""
   },
   "src/main/kotlin/ir/claudefa/ide/IdeTools.kt": {
@@ -102,9 +102,9 @@
     "semantic_hash": ""
   },
   "src/main/kotlin/ir/claudefa/ide/PermissionBroker.kt": {
-    "mtime": 1794820554.002332,
-    "seen": 1794820811.384234,
-    "ast_hash": "2789d2626debc5901b619ce965b3144d",
+    "mtime": 1794824058.8724115,
+    "seen": 1794825526.340807,
+    "ast_hash": "85ef6c2bc772edd67c83e138c526bcba",
     "semantic_hash": ""
   },
   "src/main/kotlin/ir/claudefa/ide/ProjectFileSearch.kt": {
@@ -141,6 +141,42 @@
     "mtime": 1794823096.6151102,
     "seen": 1794823383.9739451,
     "ast_hash": "c72cfafba5a69a6f9311070f715bbec1",
+    "semantic_hash": ""
+  },
+  "src/main/kotlin/ir/claudefa/PluginLog.kt": {
+    "mtime": 1794823943.5964744,
+    "seen": 1794825526.3407948,
+    "ast_hash": "3f7320575787109461326b1005a00a33",
+    "semantic_hash": ""
+  },
+  "src/main/kotlin/ir/claudefa/cli/CliInfo.kt": {
+    "mtime": 1794823981.0575733,
+    "seen": 1794825526.340799,
+    "ast_hash": "9505c099d2e15ca027dad8c9386ee505",
+    "semantic_hash": ""
+  },
+  "src/main/kotlin/ir/claudefa/ide/DependencyScanner.kt": {
+    "mtime": 1794824003.958467,
+    "seen": 1794825526.3408,
+    "ast_hash": "d4c60d7021ca94943101621dd4f9abd6",
+    "semantic_hash": ""
+  },
+  "src/main/kotlin/ir/claudefa/ide/GitInfo.kt": {
+    "mtime": 1794823968.633725,
+    "seen": 1794825526.340802,
+    "ast_hash": "5ade3e4e2064f9405b25208fde09031c",
+    "semantic_hash": ""
+  },
+  "src/main/kotlin/ir/claudefa/ide/Guard.kt": {
+    "mtime": 1794824195.9082742,
+    "seen": 1794825526.3408031,
+    "ast_hash": "3fba8d27296ecb182ee369c9218ff1a4",
+    "semantic_hash": ""
+  },
+  "src/main/kotlin/ir/claudefa/cli/ClaudeConfig.kt": {
+    "mtime": 1794826345.9820328,
+    "seen": 1794826637.148791,
+    "ast_hash": "89d5ee87f2aa53196928db53ee21cacf",
     "semantic_hash": ""
   }
 }

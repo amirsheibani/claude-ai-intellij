@@ -36,6 +36,32 @@ object CliInfo {
         return runCatching { JsonParser.parseString(out.substring(out.indexOf('{'))).asJsonObject }.getOrNull()
     }
 
+    /**
+     * Runs the local `/usage` command (no tokens are spent) and parses lines like
+     * "Current week (Fable): 5% used · resets Nov 21 at 7:30am (Asia/Tehran)".
+     */
+    fun usage(workDir: String?): JsonObject? {
+        val out = run(workDir, "/usage", "-p", "--output-format", "json") ?: return null
+        val text = runCatching {
+            JsonParser.parseString(out.substring(out.indexOf('{'))).asJsonObject.get("result").asString
+        }.getOrNull() ?: return null
+        val windows = JsonArray()
+        val re = Regex("""^\s*(Current [^:]+):\s*(\d+(?:\.\d+)?)%\s*used(?:\s*[·•-]\s*resets\s+(.+))?$""", RegexOption.MULTILINE)
+        re.findAll(text).forEach { m ->
+            windows.add(JsonObject().apply {
+                addProperty("label", m.groupValues[1].trim())
+                addProperty("percent", m.groupValues[2].toDouble())
+                addProperty("resets", m.groupValues[3].trim())
+            })
+        }
+        return JsonObject().apply {
+            add("windows", windows)
+            text.substringAfter("What's contributing", "").takeIf { it.isNotBlank() }
+                ?.let { addProperty("insights", "What's contributing$it".trim()) }
+            text.lineSequence().firstOrNull { it.isNotBlank() }?.let { addProperty("headline", it.trim()) }
+        }
+    }
+
     fun version(): String? = run(null, null, "--version", timeoutSec = 15)?.trim()?.substringBefore(' ')
 
     fun logout(): Boolean = run(null, null, "auth", "logout", timeoutSec = 30) != null

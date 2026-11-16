@@ -1,6 +1,6 @@
 {
   "0": "ChatPanel",
-  "3": "ProjectFileSearch",
+  "3": "Listener",
   "4": "ChatPanel.kt",
   "5": "SelectionActions.kt",
   "6": "DependencyScanner.kt",
@@ -12,14 +12,13 @@
   "16": "CLAUDE.md",
   "17": "AnAction",
   "18": "AnActionEvent",
-  "19": "file",
+  "19": "Disposable",
   "20": "DumbAware",
   "21": "Service",
   "22": "DumbAware",
-  "23": "Guard",
-  "24": "IdeTools.kt",
-  "25": "Disposable",
-  "26": "Project",
+  "23": "Project",
+  "24": "Volatile",
+  "25": "ClaudeFaSettings",
   "27": "Listener",
   "28": "Listener"
 }

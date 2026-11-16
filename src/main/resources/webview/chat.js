@@ -38,6 +38,12 @@
     vulnShowList: false,
     git: null,
     keepMin: 15,
+    skills: null,
+    skillQ: "",
+    usageInsights: "",
+    usageAt: 0,
+    modelOpen: {},
+    rules: null,
   };
 
   function toIde(obj) {
@@ -177,6 +183,18 @@
   function fmtInt(n) {
     return (n || 0).toLocaleString("en-US");
   }
+  const MONTHS = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
+  /** "Nov 21 at 7:30am (Asia/Tehran)" -> epoch seconds (local time), or 0. */
+  function parseResetText(t) {
+    const m = /^([A-Za-z]{3})\w*\s+(\d{1,2})\s+at\s+(\d{1,2})(?::(\d{2}))?\s*(am|pm)/i.exec(t || "");
+    if (!m) return 0;
+    let h = +m[3] % 12;
+    if (m[5].toLowerCase() === "pm") h += 12;
+    const now = new Date();
+    const d = new Date(now.getFullYear(), MONTHS[m[1].toLowerCase()], +m[2], h, +(m[4] || 0));
+    if (d.getTime() < now.getTime() - 86400000 * 30) d.setFullYear(d.getFullYear() + 1);
+    return Math.floor(d.getTime() / 1000);
+  }
   function fmtReset(sec) {
     if (!sec) return "";
     const d = Math.max(0, Math.round((sec * 1000 - Date.now()) / 60000));
@@ -184,9 +202,11 @@
   }
   function modelLabel(id) {
     if (!id) return "پیش‌فرض";
-    const m = /^claude-([a-z]+)-(\d+)-(\d+)/.exec(id);
-    if (m) return m[1][0].toUpperCase() + m[1].slice(1) + " " + m[2] + "." + m[3];
-    return id[0].toUpperCase() + id.slice(1);
+    const known = ALL_MODELS.find((m) => m[0] === id);
+    if (known) return known[1];
+    const m = /^claude-([a-z]+)-(\d+)(?:-(\d))?(?:-\d{8})?(\[1m\])?$/.exec(id);
+    if (m) return cap(m[1]) + " " + m[2] + (m[3] ? "." + m[3] : "") + (m[4] ? " · 1M" : "");
+    return cap(id);
   }
   function countLines(s) {
     s = String(s || "").replace(/\n+$/, "");
@@ -209,7 +229,24 @@
   }
 
   function freshUsage(win) {
-    return { ctx: 0, window: win || 200000, outTok: 0, reasoning: 0, cost: 0 };
+    // outTok/reasoning: finished turns. turnOut/turnReason: finished messages of the running turn.
+    // cur: the message being streamed right now (estimated from text, replaced by exact counts).
+    return { ctx: 0, window: win || 200000, outTok: 0, reasoning: 0, cost: 0, turnOut: 0, turnReason: 0, cur: null };
+  }
+  function liveOut(u) {
+    return u.outTok + u.turnOut + (u.cur ? u.cur.out : 0);
+  }
+  function liveReason(u) {
+    return u.reasoning + u.turnReason + (u.cur ? u.cur.reason : 0);
+  }
+  let infoScheduled = false;
+  function scheduleInfo(c) {
+    if (c !== chat() || infoScheduled) return;
+    infoScheduled = true;
+    requestAnimationFrame(() => {
+      infoScheduled = false;
+      renderInfo();
+    });
   }
 
   function newChat() {
@@ -647,7 +684,8 @@
     const c = chat();
     if (!c || !c.busy) return;
     $("spin").textContent = SPIN[spinI++ % SPIN.length];
-    $("statusHint").textContent = "(" + Math.round((Date.now() - c.startedAt) / 1000) + "s · esc برای توقف)";
+    const turnTok = Math.round(c.usage.turnOut + (c.usage.cur ? c.usage.cur.out : 0));
+    $("statusHint").textContent = "(" + Math.round((Date.now() - c.startedAt) / 1000) + "s · ↓ " + fmtNum(turnTok) + " توکن · esc برای توقف)";
   }, 120);
 
   function setBusy(c, b, text) {
@@ -677,9 +715,34 @@
     if (c === chat()) setStatus(text);
   }
 
-  const LIMIT_LABELS = { five_hour: "نشست فعلی", seven_day: "همهٔ مدل‌ها (هفتگی)", seven_day_opus: "Opus (هفتگی)", seven_day_sonnet: "Sonnet (هفتگی)" };
+  /** G.limits is keyed by the CLI's own label ("Current session", "Current week (Fable)", …). */
   function limitLabel(k) {
-    return LIMIT_LABELS[k] || k.replace(/^seven_day_/, "").replace(/_/g, " ");
+    if (k === "Current session") return "نشست فعلی";
+    if (/^Current week \(all models\)$/i.test(k)) return "هفتگی · همهٔ مدل‌ها";
+    const m = /^Current week \((.+)\)$/.exec(k);
+    if (m) return "هفتگی · " + m[1];
+    return k;
+  }
+  function rateKeyToLabel(k) {
+    if (k === "five_hour") return "Current session";
+    if (k === "seven_day") return "Current week (all models)";
+    const m = /^seven_day_(\w+)$/.exec(k);
+    return m ? "Current week (" + cap(m[1]) + ")" : k;
+  }
+  function setLimit(label, pct, resetsAt) {
+    const l = G.limits[label] || (G.limits[label] = {});
+    l.pct = pct;
+    if (resetsAt) l.resetsAt = resetsAt;
+  }
+  let usageTimer = 0;
+  /** Ask the IDE to run the local /usage command (free); at most once a minute unless forced. */
+  function requestUsage(force) {
+    if (!force && Date.now() - G.usageAt < 60000) {
+      if (!usageTimer) usageTimer = setTimeout(() => { usageTimer = 0; requestUsage(true); }, 60000 - (Date.now() - G.usageAt));
+      return;
+    }
+    G.usageAt = Date.now();
+    toIde({ type: "usage" });
   }
 
   function renderInfo() {
@@ -691,8 +754,8 @@
     const bar = $("infoCtxBar");
     bar.style.width = pct + "%";
     bar.classList.toggle("high", pct >= 70);
-    $("infoOut").textContent = fmtNum(u.outTok);
-    $("infoReason").textContent = fmtNum(u.reasoning);
+    $("infoOut").textContent = fmtNum(Math.round(liveOut(u)));
+    $("infoReason").textContent = fmtNum(Math.round(liveReason(u)));
     $("infoCost").textContent = "$" + u.cost.toFixed(u.cost < 1 ? 4 : 2);
     $("infoModel").textContent = c.model ? modelLabel(c.model) : G.model ? modelLabel(G.model) : "default";
     $("infoCwd").textContent = tildePath(c.cwd || G.projectPath);
@@ -702,7 +765,7 @@
     $("infoProvider").textContent = (a && a.apiProvider) || "—";
     $("infoLimits").innerHTML = Object.keys(G.limits).map((k) => {
       const l = G.limits[k];
-      const p = Math.round((l.utilization || 0) * 100);
+      const p = Math.round(l.pct || 0);
       return '<span class="lim"><span class="k">' + esc(limitLabel(k)) + '</span><span class="bar"><span style="width:' + p + '%"' +
         (p >= 80 ? ' class="high"' : "") + '></span></span><span class="v">' + p + "%</span><span>" + esc(fmtReset(l.resetsAt)) + "</span></span>";
     }).join("");
@@ -718,8 +781,12 @@
 
   function onRateLimit(info) {
     if (!info) return;
-    if (info.unifiedWindows) Object.keys(info.unifiedWindows).forEach((k) => (G.limits[k] = info.unifiedWindows[k]));
-    else if (info.rateLimitType) G.limits[info.rateLimitType] = { utilization: info.utilization, resetsAt: info.resetsAt };
+    if (info.unifiedWindows) {
+      Object.keys(info.unifiedWindows).forEach((k) => {
+        const w = info.unifiedWindows[k];
+        setLimit(rateKeyToLabel(k), (w.utilization || 0) * 100, w.resetsAt);
+      });
+    } else if (info.rateLimitType) setLimit(rateKeyToLabel(info.rateLimitType), (info.utilization || 0) * 100, info.resetsAt);
     renderInfo();
     if (G.view === "session") renderSession();
   }
@@ -729,11 +796,35 @@
     return parentId ? agentFor(c, parentId).T : c.main;
   }
 
+  /** Rough token estimate for streamed text (~3.5 chars per token, Persian/code mixed). */
+  function estTok(s) {
+    return (s ? s.length : 0) / 3.5;
+  }
+
   function handleStream(c, T, ev) {
+    const main = T === c.main;
+    const u = c.usage;
     switch (ev.type) {
       case "message_start":
         if (ev.message && ev.message.id) T.streamed.add(ev.message.id);
         T.blocks = {};
+        if (main) {
+          const mu = (ev.message && ev.message.usage) || {};
+          const ctx = (mu.input_tokens || 0) + (mu.cache_read_input_tokens || 0) + (mu.cache_creation_input_tokens || 0);
+          if (ctx > 0) u.ctx = ctx;
+          u.cur = { out: mu.output_tokens || 0, reason: 0 };
+          scheduleInfo(c);
+        }
+        break;
+      case "message_delta":
+        if (main && ev.usage) {
+          const out = ev.usage.output_tokens || 0;
+          const reason = (ev.usage.output_tokens_details && ev.usage.output_tokens_details.thinking_tokens) || 0;
+          u.turnOut += out;
+          u.turnReason += reason;
+          u.cur = null;
+          scheduleInfo(c);
+        }
         break;
       case "content_block_start": {
         const cb = ev.content_block || {};
@@ -747,6 +838,13 @@
       case "content_block_delta": {
         const b = T.blocks[ev.index];
         const d = ev.delta || {};
+        if (main && u.cur) {
+          const est = estTok(d.text || d.thinking || d.partial_json || "");
+          u.cur.out += est;
+          if (d.type === "thinking_delta") u.cur.reason += est;
+          scheduleInfo(c);
+        }
+        if (d.type === "thinking_delta") chatStatus(c, "در حال فکر کردن…");
         if (b && b.type === "text" && d.type === "text_delta") {
           b.text += d.text;
           scheduleRender(T, b);
@@ -783,8 +881,13 @@
 
   function handleResult(c, ev) {
     const u = ev.usage || {};
-    c.usage.outTok += u.output_tokens || 0;
-    c.usage.reasoning += (u.output_tokens_details && u.output_tokens_details.thinking_tokens) || 0;
+    const cu = c.usage;
+    // The result carries the exact totals of the whole turn; they replace the live numbers.
+    cu.outTok += u.output_tokens || Math.round(cu.turnOut);
+    cu.reasoning += (u.output_tokens_details && u.output_tokens_details.thinking_tokens) || Math.round(cu.turnReason);
+    cu.turnOut = 0;
+    cu.turnReason = 0;
+    cu.cur = null;
     if (typeof ev.total_cost_usd === "number") c.usage.cost += ev.total_cost_usd;
     if (ev.modelUsage) Object.values(ev.modelUsage).forEach((m) => { if (m && m.contextWindow) c.usage.window = m.contextWindow; });
     if (ev.session_id) c.sessionId = ev.session_id;
@@ -800,6 +903,7 @@
       turnEl(c.main).appendChild(m);
     }
     if (c === chat()) renderInfo();
+    requestUsage(false);
     if (G.view === "session" && c === chat()) toIde({ type: "session", chat: c.id });
     scrollDown(c.main);
   }
@@ -813,6 +917,9 @@
           c.model = ev.model || c.model;
           c.cwd = ev.cwd || c.cwd;
           c.version = ev.claude_code_version || c.version;
+          if (Array.isArray(ev.skills)) c.activeSkills = ev.skills;
+          if (Array.isArray(ev.plugins)) c.pluginPaths = ev.plugins.map((p) => p.path).filter(Boolean);
+          if (G.view === "skills" && c === chat()) renderSkills();
           if (ev.session_id) c.sessionId = ev.session_id;
           if (!c.connected) {
             c.connected = true;
@@ -849,13 +956,28 @@
     ["dontAsk", "نپرس", "هر چه نیاز به اجازه دارد خودکار رد می‌شود"],
     ["auto", "خودکار", "Claude خودش دربارهٔ اجازه‌ها تصمیم می‌گیرد"],
   ];
+  // Aliases always resolve to the newest version of a family.
   const MODELS = [
     ["", "پیش‌فرض", "مدل پیش‌فرض حساب شما"],
-    ["opus", "Opus", "قوی‌ترین؛ برای کارهای سخت و طولانی"],
-    ["sonnet", "Sonnet", "بهترین برای کارهای روزمره و پیچیده"],
-    ["haiku", "Haiku", "سریع‌ترین؛ برای پاسخ‌های کوتاه"],
-    ["claude-fable-5-1", "Fable 5.1", "مدل Fable"],
+    ["opus", "Opus (آخرین نسخه)", "قوی‌ترین؛ برای سخت‌ترین و طولانی‌ترین کارها"],
+    ["sonnet", "Sonnet (آخرین نسخه)", "بهترین برای کارهای روزمره و پیچیده"],
+    ["haiku", "Haiku (آخرین نسخه)", "سریع‌ترین؛ برای پاسخ‌های کوتاه و کارهای ساده"],
+    ["fable", "Fable (آخرین نسخه)", "آخرین مدل خانوادهٔ Fable"],
+    ["opusplan", "Opus Plan", "Opus برای برنامه‌ریزی، Sonnet برای اجرا"],
+    ["opus[1m]", "Opus · 1M context", "context یک میلیون توکنی"],
+    ["sonnet[1m]", "Sonnet · 1M context", "context یک میلیون توکنی"],
+    ["fable[1m]", "Fable · 1M context", "context یک میلیون توکنی"],
   ];
+  // Specific versions (model IDs known to Claude Code 2.1.x). Your plan may not include all of them.
+  const MODEL_FAMILIES = [
+    ["Opus", [["claude-opus-5-5", "Opus 5.5"], ["claude-opus-5", "Opus 5"], ["claude-opus-4-8", "Opus 4.8"], ["claude-opus-4-7", "Opus 4.7"],
+      ["claude-opus-4-6", "Opus 4.6"], ["claude-opus-4-5", "Opus 4.5"], ["claude-opus-4-1", "Opus 4.1"], ["claude-opus-4-0", "Opus 4"]]],
+    ["Sonnet", [["claude-sonnet-5-5", "Sonnet 5.5"], ["claude-sonnet-5", "Sonnet 5"], ["claude-sonnet-4-6", "Sonnet 4.6"],
+      ["claude-sonnet-4-5", "Sonnet 4.5"], ["claude-sonnet-4-0", "Sonnet 4"]]],
+    ["Haiku", [["claude-haiku-5-5", "Haiku 5.5"], ["claude-haiku-4-5", "Haiku 4.5"]]],
+    ["Fable", [["claude-fable-5-2", "Fable 5.2"], ["claude-fable-5-1", "Fable 5.1"], ["claude-fable-5", "Fable 5"]]],
+  ];
+  const ALL_MODELS = MODELS.concat(...MODEL_FAMILIES.map((f) => f[1]));
   const EFFORTS = [["", "Default"], ["low", "Low"], ["medium", "Medium"], ["high", "High"], ["xhigh", "XHigh"], ["max", "Max"]];
 
   function setMode(m, notify) {
@@ -869,7 +991,7 @@
   function setModel(m, notify) {
     G.model = m || "";
     const e = MODELS.find((x) => x[0] === G.model);
-    $("ddModel").querySelector(".lbl").textContent = e ? e[1] : modelLabel(G.model);
+    $("ddModel").querySelector(".lbl").textContent = e ? e[1].replace(" (آخرین نسخه)", "") : modelLabel(G.model);
     if (notify) toIde({ type: "setModel", value: G.model });
     renderInfo();
   }
@@ -949,7 +1071,9 @@
       '<span class="ck">' + (it.checked ? "✓" : "") + "</span>";
     b.querySelector(".lt").textContent = it.label;
     if (it.desc) b.querySelector(".md2").textContent = it.desc;
+    if (it.family) b.dataset.modelFamily = it.family;
     b.addEventListener("click", (e) => {
+      if (it.keepOpen) return; // handled by the document click listener (re-renders the menu)
       e.stopPropagation();
       closeMenu();
       if (it.onClick) it.onClick();
@@ -962,9 +1086,20 @@
     menuAnchor = null;
   }
 
+  function menuAnchorFor(id) {
+    return $(id);
+  }
   function modelMenu(anchor) {
     const items = MODELS.map((m) => ({ label: m[1], desc: m[2], checked: G.model === m[0], onClick: () => setModel(m[0], true) }));
-    if (G.model && !MODELS.some((m) => m[0] === G.model)) items.push({ label: G.model, checked: true });
+    items.push({ sep: true }, { header: "انتخاب نسخهٔ مشخص" });
+    MODEL_FAMILIES.forEach(([fam, versions]) => {
+      const hasCurrent = versions.some((v) => v[0] === G.model);
+      const open = G.modelOpen[fam] !== undefined ? G.modelOpen[fam] : hasCurrent;
+      G.modelOpen[fam] = open;
+      items.push({ label: (open ? "▾ " : "◂ ") + fam + "  (" + versions.length + " نسخه)", cls: "fam", family: fam, keepOpen: true });
+      if (open) versions.forEach((v) => items.push({ label: v[1], desc: v[0], cls: "ver", checked: G.model === v[0], onClick: () => setModel(v[0], true) }));
+    });
+    if (G.model && !ALL_MODELS.some((m) => m[0] === G.model)) items.push({ label: G.model, checked: true });
     items.push({ sep: true }, { header: "مدل دیگر" }, {
       input: {
         placeholder: "شناسهٔ مدل، مثلاً claude-opus-5-5 و Enter",
@@ -1139,10 +1274,106 @@
       case "session": {
         const c = chat();
         renderSession();
+        requestUsage(false);
         if (c) toIde({ type: "session", chat: c.id });
         return;
       }
+      case "skills": {
+        const c = chat();
+        renderSkills();
+        return toIde({ type: "skills", pluginPaths: (c && c.pluginPaths) || [] });
+      }
+      case "rules":
+        renderRules();
+        return toIde({ type: "rules" });
     }
+  }
+
+  // ---------------------------------------------------------------- skills
+  let skillsBuilt = false;
+  function renderSkills() {
+    const v = $("view-skills");
+    if (!skillsBuilt) {
+      skillsBuilt = true;
+      v.innerHTML = '<div class="cardbox"><h4>اسکیل‌ها، دستورها و عامل‌ها</h4><div class="muted">هر چیزی که Claude در این پروژه می‌تواند از آن استفاده کند: ' +
+        'از پوشهٔ <span class="mono ltr">.claude</span> پروژه، <span class="mono ltr">~/.claude</span> و پلاگین‌های نصب‌شده. «اجرا» دستور را در کادر پیام می‌گذارد.</div>' +
+        '<input class="field" id="skQ" placeholder="جستجوی نام یا توضیح…" dir="auto" style="width:100%;margin-top:8px"></div><div id="skBody"></div>';
+      $("skQ").addEventListener("input", (e) => {
+        G.skillQ = e.target.value.toLowerCase();
+        renderSkillsBody();
+      });
+    }
+    renderSkillsBody();
+  }
+  function renderSkillsBody() {
+    const box = $("skBody");
+    if (!box) return;
+    const d = G.skills;
+    if (!d) return (box.innerHTML = '<div class="cardbox"><div class="muted">در حال خواندن…</div></div>');
+    const c = chat();
+    const active = (c && c.activeSkills) || null;
+    const q = G.skillQ;
+    const match = (x) => !q || (x.name + " " + x.description).toLowerCase().includes(q);
+    const srcLabel = (src) => (src === "project" ? "پروژه" : src === "user" ? "کاربر" : src.replace(/^plugin:/, "پلاگین: "));
+    const section = (title, items, runnable) => {
+      const list = items.filter(match);
+      const groups = {};
+      list.forEach((x) => (groups[x.source] = groups[x.source] || []).push(x));
+      const order = Object.keys(groups).sort((a, b) => (a === "project" ? -1 : b === "project" ? 1 : a === "user" ? -1 : b === "user" ? 1 : a.localeCompare(b)));
+      return '<div class="cardbox"><h4>' + title + " (" + list.length + ")</h4>" + (list.length ? order.map((src) =>
+        "<h5>" + esc(srcLabel(src)) + '</h5><div class="rows">' + groups[src].map((x) =>
+          '<div class="r"><span class="grow"><span class="code">' + (runnable ? "/" : "") + esc(x.name) +
+          (active && runnable && active.indexOf(x.name) >= 0 ? ' <span class="tag on">فعال در این نشست</span>' : "") +
+          '</span><span class="sub" dir="auto">' + esc(x.description || "—") + "</span></span>" +
+          '<span class="acts">' + (runnable ? '<button class="pillbtn" data-run-skill="' + esc(x.name) + '">اجرا</button>' : "") +
+          '<button class="icon" data-open-path="' + esc(x.path) + '" title="باز کردن فایل">↗</button></span></div>').join("") + "</div>").join("")
+        : '<div class="empty-note">چیزی پیدا نشد.</div>') + "</div>";
+    };
+    box.innerHTML = section("اسکیل‌ها", d.skills || [], true) + section("دستورهای سفارشی", d.commands || [], true) + section("عامل‌ها (subagents)", d.agents || [], false);
+  }
+
+  // ---------------------------------------------------------------- rules
+  const SCOPE_FA = { project: "پروژه", local: "محلی (شخصی، داخل git نمی‌رود)", user: "کاربر (همهٔ پروژه‌ها)", parent: "پوشهٔ والد",
+    "project-rule": "قانون پروژه (.claude/rules)", "user-rule": "قانون کاربر (~/.claude/rules)", "auto-memory": "حافظهٔ خودکار" };
+  function renderRules() {
+    const v = $("view-rules");
+    const r = G.rules;
+    if (!r) return (v.innerHTML = '<div class="cardbox"><div class="muted">در حال خواندن…</div></div>');
+    const mem = r.memory || [];
+    const projectMd = mem.find((m) => m.scope === "project" && /\/CLAUDE\.md$/.test(m.path) && !/\.claude\/CLAUDE\.md$/.test(m.path));
+    let html = '<div class="cardbox"><h4>دستورالعمل‌ها (CLAUDE.md)</h4><div class="muted">Claude این فایل‌ها را در شروع هر نشست می‌خواند و از آن‌ها پیروی می‌کند.</div><div class="rows">' +
+      mem.filter((m) => m.exists).map((m) => '<div class="r"><span class="grow"><span class="code">' + esc(tildePath(m.path)) +
+        '</span><span class="sub">' + esc(SCOPE_FA[m.scope] || m.scope) + " · " + m.lines + ' خط</span><div class="preview">' + esc(m.preview || "") + "</div></span>" +
+        '<span class="acts"><button class="icon" data-open-path="' + esc(m.path) + '" title="باز کردن">↗</button></span></div>').join("") + "</div>";
+    if (projectMd && !projectMd.exists) {
+      html += '<div class="notice warn">این پروژه هنوز CLAUDE.md ندارد.</div><div class="btnrow">' +
+        '<button class="primary" data-run-init="1">ساخت با Claude (/init)</button>' +
+        '<button class="pillbtn" data-create-path="' + esc(projectMd.path) + '">ساخت فایل خالی</button></div>';
+    }
+    html += "</div>";
+    const settings = r.settings || [];
+    const chips = (arr, cls) => (arr && arr.length ? '<div class="rulechips">' + arr.map((x) => '<span class="tag ' + cls + '">' + esc(x) + "</span>").join("") + "</div>" : "");
+    html += '<div class="cardbox"><h4>قوانین دسترسی (permissions)</h4><div class="muted">ابزارها و دستورهایی که Claude بدون پرسش مجاز (allow)، با پرسش (ask) یا ممنوع (deny) است. ' +
+      "قوانین deny از همه مهم‌ترند.</div>" + (settings.length ? settings.map((st) => {
+        const has = (st.allow && st.allow.length) || (st.ask && st.ask.length) || (st.deny && st.deny.length) || st.defaultMode || (st.additionalDirectories && st.additionalDirectories.length);
+        return "<h5>" + esc(SCOPE_FA[st.scope] || st.scope) + ' · <span class="mono ltr">' + esc(tildePath(st.path)) + '</span> <button class="icon" data-open-path="' + esc(st.path) + '">↗</button></h5>' +
+          (has ? (st.defaultMode ? '<div class="sub">حالت پیش‌فرض: <span class="mono">' + esc(st.defaultMode) + "</span></div>" : "") +
+            (st.allow && st.allow.length ? '<div class="sub">مجاز:</div>' + chips(st.allow, "allow") : "") +
+            (st.ask && st.ask.length ? '<div class="sub">با پرسش:</div>' + chips(st.ask, "ask") : "") +
+            (st.deny && st.deny.length ? '<div class="sub">ممنوع:</div>' + chips(st.deny, "deny") : "") +
+            (st.additionalDirectories && st.additionalDirectories.length ? '<div class="sub">پوشه‌های اضافه:</div>' + chips(st.additionalDirectories, "") : "")
+            : '<div class="empty-note">قانون دسترسی ندارد.</div>');
+      }).join("") : '<div class="empty-note">هیچ فایل settings.json پیدا نشد.</div>') + "</div>";
+    const hooks = [];
+    settings.forEach((st) => (st.hooks || []).forEach((h) => hooks.push({ scope: st.scope, event: h.event, commands: h.commands || [] })));
+    html += '<div class="cardbox"><h4>Hookها</h4><div class="muted">دستورهایی که در رویدادهای Claude (مثل قبل یا بعد از هر ابزار) خودکار اجرا می‌شوند.</div><div class="rows">' +
+      (hooks.length ? hooks.map((h) => '<div class="r"><span class="tag">' + esc(h.event) + '</span><span class="grow">' +
+        h.commands.map((cmd) => '<span class="code">' + esc(cmd) + "</span>").join("") + '<span class="sub">' + esc(SCOPE_FA[h.scope] || h.scope) + "</span></span></div>").join("")
+        : '<div class="empty-note">هیچ hookی تعریف نشده.</div>') + "</div></div>";
+    const plugins = [];
+    settings.forEach((st) => (st.plugins || []).forEach((p) => plugins.push(p)));
+    if (plugins.length) html += '<div class="cardbox"><h4>پلاگین‌های فعال</h4>' + chips(plugins, "on") + "</div>";
+    v.innerHTML = html;
   }
   function sendFromView(text) {
     switchView("chat");
@@ -1361,7 +1592,7 @@
   }
 
   // ---------------------------------------------------------------- session
-  const CTX_COLORS = ["#d77757", "#c4643f", "#e39b80", "#b8573a", "#f0b9a3", "#a14d34", "#e8875f", "#8f4a35", "#6cb6ff", "#7b7e84"];
+  const CTX_COLORS = ["#04403e", "#0b6b67", "#13908a", "#2fb3ab", "#66cdc6", "#a3e3dd", "#08504d", "#1c7d78", "#6cb6ff", "#7b7e84"];
   function renderSession() {
     const v = $("view-session");
     const c = chat();
@@ -1373,11 +1604,13 @@
     let html = '<div class="cardbox"><h4>محدودیت‌های پلن' + (plan ? " · " + esc(plan.toUpperCase()) : "") + "</h4>" +
       (keys.length ? keys.map((k) => {
         const l = G.limits[k];
-        const p = (l.utilization || 0) * 100;
+        const p = l.pct || 0;
         return '<div class="meter"><div class="row1"><span>' + esc(limitLabel(k)) + '</span><span class="pct">' + p.toFixed(1) + "% used</span></div>" +
           '<div class="track"><div class="fill' + (p >= 95 ? " full" : p >= 75 ? " warn" : "") + '" style="width:' + p + '%"></div></div>' +
           '<div class="reset">بازنشانی تا ' + esc(fmtReset(l.resetsAt)) + "</div></div>";
-      }).join("") : '<div class="empty-note">بعد از اولین پیام نمایش داده می‌شود — Claude آن را همراه هر پاسخ می‌فرستد.</div>') + "</div>";
+      }).join("") : '<div class="empty-note">در حال خواندن با دستور /usage …</div>') +
+      (G.usageInsights ? '<h5>چه چیزی مصرف را بالا می‌برد؟</h5><div class="preview" style="max-height:none;direction:ltr;text-align:left">' + esc(G.usageInsights) + "</div>" : "") +
+      '<div class="btnrow" style="margin-top:6px"><button class="pillbtn" data-usage-refresh="1">↻ به‌روزرسانی مصرف</button></div></div>';
     const cx = si.context;
     html += '<div class="cardbox"><h4>Context</h4>';
     if (!cx) html += '<div class="empty-note">در حال محاسبه با دستور /context …</div>';
@@ -1513,6 +1746,11 @@
             }
           });
           c.main.turn = null;
+          c.usage.outTok += Math.round(c.usage.turnOut + (c.usage.cur ? c.usage.cur.out : 0));
+          c.usage.reasoning += Math.round(c.usage.turnReason + (c.usage.cur ? c.usage.cur.reason : 0));
+          c.usage.turnOut = c.usage.turnReason = 0;
+          c.usage.cur = null;
+          if (c === chat()) renderInfo();
           setBusy(c, false);
           if (c === chat()) {
             renderSubTabs();
@@ -1571,6 +1809,26 @@
           G.logLines.push(p);
           if (G.logLines.length > 2000) G.logLines.shift();
           if (G.view === "log") renderLogBody();
+          break;
+        case "usage":
+          (p.windows || []).forEach((w) => {
+            const l = G.limits[w.label] || (G.limits[w.label] = {});
+            l.pct = w.percent;
+            const at = parseResetText(w.resets);
+            if (at) l.resetsAt = at;
+            l.resetText = w.resets;
+          });
+          if (p.insights) G.usageInsights = p.insights;
+          renderInfo();
+          if (G.view === "session") renderSession();
+          break;
+        case "skills":
+          G.skills = p;
+          if (G.view === "skills") renderSkills();
+          break;
+        case "rules":
+          G.rules = p;
+          if (G.view === "rules") renderRules();
           break;
         case "vulnInventory":
           G.vulnInv = p;
@@ -1777,6 +2035,26 @@
       return t.remove();
     }
     if (t.classList.contains("sugg")) return send(t.textContent);
+    if (t.closest("[data-usage-refresh]")) return requestUsage(true);
+    const fam = t.closest("[data-model-family]");
+    if (fam) {
+      const f = fam.dataset.modelFamily;
+      G.modelOpen[f] = !G.modelOpen[f];
+      return modelMenu(menuAnchorFor("ddModel"));
+    }
+    const rs = t.closest("[data-run-skill]");
+    if (rs) {
+      switchView("chat");
+      inputEl.value = "/" + rs.dataset.runSkill + " ";
+      autoGrow();
+      inputEl.focus();
+      return inputEl.setSelectionRange(inputEl.value.length, inputEl.value.length);
+    }
+    const op = t.closest("[data-open-path]");
+    if (op) return toIde({ type: "openFile", path: op.dataset.openPath, line: 0 });
+    if (t.closest("[data-run-init]")) return sendFromView("/init");
+    const cp = t.closest("[data-create-path]");
+    if (cp) return toIde({ type: "createFile", path: cp.dataset.createPath, content: "# CLAUDE.md\n\n" });
     const ga = t.closest("[data-git-ask]");
     if (ga) return gitAsk(ga.dataset.gitAsk);
     const ia = t.closest("[data-ide-action]");
@@ -1832,6 +2110,7 @@
 
   window.addEventListener("resize", closeMenu);
   setInterval(renderInfo, 60000); // keep "resets in" fresh
+  setInterval(() => requestUsage(true), 5 * 60000);
 
   newChat();
   inputEl.focus();

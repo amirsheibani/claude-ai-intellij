@@ -36,6 +36,7 @@ import com.intellij.util.ui.UIUtil
 import ir.claudefa.PluginLog
 import ir.claudefa.cli.ClaudeCliRunner
 import ir.claudefa.cli.CliInfo
+import ir.claudefa.cli.ClaudeConfig
 import ir.claudefa.ide.DependencyScanner
 import ir.claudefa.ide.GitInfo
 import ir.claudefa.ide.Guard
@@ -110,6 +111,7 @@ class ChatPanel(private val project: Project) : Disposable, PermissionBroker.Ui 
                 }
                 sendInit()
                 pooled { sendAccount() }
+                pooled { CliInfo.usage(project.basePath)?.let { post("usage", it) } }
             }
         }, browser.cefBrowser)
 
@@ -278,6 +280,27 @@ class ChatPanel(private val project: Project) : Disposable, PermissionBroker.Ui 
                     CliInfo.logout()
                     PluginLog.info("account", "Logged out of Claude")
                     sendAccount()
+                }
+            }
+
+            "usage" -> pooled { CliInfo.usage(project.basePath)?.let { post("usage", it) } }
+
+            // ----- Skills / Rules tabs
+            "skills" -> {
+                val paths = msg.getAsJsonArray("pluginPaths")?.mapNotNull { it.asString } ?: emptyList()
+                pooled { post("skills", ClaudeConfig.skills(project.basePath, paths)) }
+            }
+            "rules" -> pooled { post("rules", ClaudeConfig.rules(project.basePath)) }
+            "createFile" -> {
+                val path = str("path")
+                if (path.isNotBlank()) pooled {
+                    val f = File(path)
+                    if (!f.exists()) {
+                        f.parentFile?.mkdirs()
+                        f.writeText(str("content"))
+                    }
+                    openFile(f.absolutePath, 1)
+                    post("rules", ClaudeConfig.rules(project.basePath))
                 }
             }
 
