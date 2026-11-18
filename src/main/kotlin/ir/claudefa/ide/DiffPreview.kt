@@ -21,6 +21,8 @@ import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
+
+import ir.claudefa.I18n
 import java.io.File
 
 /**
@@ -72,14 +74,14 @@ class DiffPreview private constructor(
             "Claude ✎ $fileName",
             left,
             right,
-            if (isNewFile) "(فایل جدید)" else "نسخهٔ فعلی",
-            "پیشنهاد Claude (قابل ویرایش)",
+            if (isNewFile) I18n.tr("(new file)", "(فایل جدید)") else I18n.tr("Current version", "نسخهٔ فعلی"),
+            I18n.tr("Claude's proposal (editable)", "پیشنهاد Claude (قابل ویرایش)"),
         )
         request.putUserData(
             DiffUserDataKeys.CONTEXT_ACTIONS,
             listOf<AnAction>(
-                action("پذیرش تغییرات", "Accept Claude's change (including your edits on the right side)", AllIcons.Actions.Checked, onAccept),
-                action("رد تغییرات", "Reject Claude's change", AllIcons.Actions.Cancel, onReject),
+                action(I18n.tr("Accept Changes", "پذیرش تغییرات"), "Accept Claude's change (including your edits on the right side)", AllIcons.Actions.Checked, onAccept),
+                action(I18n.tr("Reject Changes", "رد تغییرات"), "Reject Claude's change", AllIcons.Actions.Cancel, onReject),
             ),
         )
         val vf = ChainDiffVirtualFile(SimpleDiffRequestChain(request), "Claude ✎ $fileName")

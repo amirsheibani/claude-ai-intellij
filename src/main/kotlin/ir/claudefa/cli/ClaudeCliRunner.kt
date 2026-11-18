@@ -8,6 +8,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.util.execution.ParametersListUtil
+import ir.claudefa.I18n
 import ir.claudefa.PluginLog
 import ir.claudefa.ide.IdeMcpServer
 import ir.claudefa.settings.ClaudeFaSettings
@@ -53,8 +54,12 @@ class ClaudeCliRunner(
         val exe = locateCli(s.cliPath)
         if (exe == null) {
             listener.onStartFailed(
-                "فایل اجرایی claude پیدا نشد. ابتدا Claude Code را نصب کنید " +
-                    "(npm install -g @anthropic-ai/claude-code) یا مسیر آن را در Settings › Tools › ClaudeFA وارد کنید."
+                I18n.tr(
+                    "The claude executable was not found. Install Claude Code first " +
+                        "(npm install -g @anthropic-ai/claude-code) or set its path in Settings › Tools › ClaudeFA.",
+                    "فایل اجرایی claude پیدا نشد. ابتدا Claude Code را نصب کنید " +
+                        "(npm install -g @anthropic-ai/claude-code) یا مسیر آن را در Settings › Tools › ClaudeFA وارد کنید.",
+                )
             )
             return
         }
@@ -75,7 +80,7 @@ class ClaudeCliRunner(
         }
         if (s.model.isNotBlank()) cmd.addParameters("--model", s.model.trim())
         if (s.effort.isNotBlank()) cmd.addParameters("--effort", s.effort.trim())
-        if (s.respondInPersian) cmd.addParameters("--append-system-prompt", PERSIAN_SYSTEM_PROMPT)
+        if (s.matchReplyLanguage) cmd.addParameters("--append-system-prompt", languagePrompt(I18n.lang))
         sessionId?.let { cmd.addParameters("--resume", it) }
         if (s.extraArgs.isNotBlank()) cmd.addParameters(ParametersListUtil.parse(s.extraArgs))
 
@@ -91,7 +96,7 @@ class ClaudeCliRunner(
         } catch (e: Exception) {
             LOG.warn(e)
             PluginLog.warn("process", "claude failed to start: ${e.message}")
-            listener.onStartFailed("اجرای claude ناموفق بود: ${e.message}")
+            listener.onStartFailed(I18n.tr("Failed to start claude: ", "اجرای claude ناموفق بود: ") + e.message)
             return
         }
         process = p
@@ -160,11 +165,20 @@ class ClaudeCliRunner(
     companion object {
         private val LOG = logger<ClaudeCliRunner>()
 
-        const val PERSIAN_SYSTEM_PROMPT =
-            "The user prefers Persian (Farsi). Always write your explanations and answers in fluent, natural Persian " +
-                "unless the user explicitly writes in or asks for another language. Keep source code, identifiers, " +
-                "file paths, shell commands, and technical terms that have no common Persian equivalent in English. " +
-                "Never put Persian text inside code blocks except for string literals or comments the user asked for."
+        /**
+         * The user may write in Persian or English; Claude mirrors the language of each message.
+         * [uiLang] is only the fallback for messages with no clear language (e.g. a bare command).
+         */
+        fun languagePrompt(uiLang: String): String {
+            val fallback = if (uiLang == "fa") "Persian (Farsi)" else "English"
+            return "The user may write in Persian (Farsi) or English. Always reply in the language of the user's latest " +
+                "message: Persian messages get fluent, natural Persian answers; English messages get English answers. " +
+                "If the language of a message is unclear (for example only code, a path or a command), reply in $fallback. " +
+                "When writing Persian, keep source code, identifiers, file paths, shell commands, and technical terms that " +
+                "have no common Persian equivalent in English, use Persian punctuation (، ؛ ؟) and the zero-width non-joiner " +
+                "(U+200C) where Persian orthography needs it, and never put Persian text inside code blocks except for string " +
+                "literals or comments the user asked for. Do not mix both languages in one sentence unless quoting a term."
+        }
 
         fun normalizePersian(s: String): String =
             s.replace('ي', 'ی') // ي -> ی

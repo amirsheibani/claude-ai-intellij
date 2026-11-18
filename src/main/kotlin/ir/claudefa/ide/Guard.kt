@@ -1,6 +1,7 @@
 package ir.claudefa.ide
 
 import com.google.gson.JsonObject
+import ir.claudefa.I18n
 import ir.claudefa.PluginLog
 import ir.claudefa.settings.ClaudeFaSettings
 import java.io.File
@@ -21,10 +22,27 @@ object Guard {
         val id: String,
         val category: String,
         val action: Action,
-        val description: String,
+        val descriptionFa: String,
         /** Tools the rule applies to; empty = Bash only. */
         val tools: Set<String> = setOf("Bash"),
         val matches: (target: String, projectDir: String?) -> Boolean,
+    ) {
+        /** Description in the current UI language. */
+        val description: String get() = I18n.tr(DESCRIPTION_EN[id] ?: descriptionFa, descriptionFa)
+    }
+
+    private val DESCRIPTION_EN = mapOf(
+        "rm-root" to "Recursive delete of root, home or a whole directory (rm -rf / ~ * ..)",
+        "disk-wipe" to "Format or overwrite a disk (mkfs, dd to /dev)",
+        "fork-bomb" to "fork bomb",
+        "chmod-777-root" to "System-wide permission change (chmod/chown -R on /)",
+        "pipe-to-shell" to "Run a script straight from the internet (curl/wget | sh)",
+        "git-force-push" to "Force push (git push --force)",
+        "git-reset-hard" to "Discard changes (git reset --hard / clean -fd / checkout .)",
+        "sudo" to "Run a command with sudo",
+        "publish" to "Publish a package (npm publish, cargo publish, ...)",
+        "secrets-read" to "Access secret files (.env, SSH keys, credentials)",
+        "outside-project" to "Edit a file outside the project directory",
     )
 
     data class Decision(

@@ -29,8 +29,11 @@ class ClaudeFaSettings : PersistentStateComponent<ClaudeFaSettings.State> {
         var guardWhitelist: List<String> = emptyList()
         /** Keep the chat scrolled to the bottom while Claude writes. */
         var autoFollow: Boolean = true
-        /** Ask Claude to answer in Persian. */
-        var respondInPersian: Boolean = true
+
+        /** UI language: "en" (default) or "fa". */
+        var language: String = "en"
+        /** Ask Claude to answer in the language the user writes in (Persian or English). */
+        var matchReplyLanguage: Boolean = true
         /** Replace Arabic ي/ك with Persian ی/ک before sending. */
         var normalizeArabicChars: Boolean = true
         /** Optional HTTPS proxy passed to the CLI, e.g. http://127.0.0.1:10809 */

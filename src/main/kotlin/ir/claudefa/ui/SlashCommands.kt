@@ -1,5 +1,6 @@
 package ir.claudefa.ui
 
+import ir.claudefa.I18n
 import java.io.File
 
 /** Slash commands offered when the user types `/` in the chat input. */
@@ -7,12 +8,13 @@ object SlashCommands {
 
     data class Command(val name: String, val description: String, val source: String)
 
-    private val BUILT_IN = listOf(
-        Command("clear", "شروع گفتگوی جدید", "builtin"),
-        Command("compact", "خلاصه‌سازی گفتگو برای آزاد کردن context", "builtin"),
-        Command("review", "بررسی تغییرات فعلی کد", "builtin"),
-        Command("init", "ساخت فایل CLAUDE.md برای این پروژه", "builtin"),
-    )
+    private val BUILT_IN
+        get() = listOf(
+            Command("clear", I18n.tr("Start a new conversation", "شروع گفتگوی جدید"), "builtin"),
+            Command("compact", I18n.tr("Summarize the conversation to free up context", "خلاصه‌سازی گفتگو برای آزاد کردن context"), "builtin"),
+            Command("review", I18n.tr("Review the current code changes", "بررسی تغییرات فعلی کد"), "builtin"),
+            Command("init", I18n.tr("Create a CLAUDE.md file for this project", "ساخت فایل CLAUDE.md برای این پروژه"), "builtin"),
+        )
 
     /** Built-ins plus custom commands from `.claude/commands` (project and user) and skills. */
     fun list(projectDir: String?): List<Command> {

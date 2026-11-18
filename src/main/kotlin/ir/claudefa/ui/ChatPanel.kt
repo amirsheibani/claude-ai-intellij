@@ -33,6 +33,7 @@ import com.intellij.ui.jcef.JBCefBrowser
 import com.intellij.ui.jcef.JBCefBrowserBase
 import com.intellij.ui.jcef.JBCefJSQuery
 import com.intellij.util.ui.UIUtil
+import ir.claudefa.I18n
 import ir.claudefa.PluginLog
 import ir.claudefa.cli.ClaudeCliRunner
 import ir.claudefa.cli.CliInfo
@@ -90,7 +91,7 @@ class ChatPanel(private val project: Project) : Disposable, PermissionBroker.Ui 
                 handleFromJs(JsonParser.parseString(raw).asJsonObject)
             } catch (e: Exception) {
                 PluginLog.warn("bridge", "JS message failed: ${e.message}")
-                post("error", JsonObject().apply { addProperty("text", "خطای داخلی: ${e.message}") })
+                post("error", JsonObject().apply { addProperty("text", I18n.tr("Internal error: ", "خطای داخلی: ") + e.message) })
             }
             null
         }
@@ -209,7 +210,7 @@ class ChatPanel(private val project: Project) : Disposable, PermissionBroker.Ui 
                 if (text.isBlank()) return
                 val r = runner(chat)
                 if (r.isRunning) {
-                    post("error", chatJson(chat).apply { addProperty("text", "پاسخ قبلی هنوز در حال اجراست.") })
+                    post("error", chatJson(chat).apply { addProperty("text", I18n.tr("The previous reply is still running.", "پاسخ قبلی هنوز در حال اجراست.")) })
                     return
                 }
                 sendInit()
@@ -246,6 +247,10 @@ class ChatPanel(private val project: Project) : Disposable, PermissionBroker.Ui 
             "setModel" -> ClaudeFaSettings.get().model = str("value")
             "setEffort" -> ClaudeFaSettings.get().effort = str("value")
             "setAutoFollow" -> ClaudeFaSettings.get().autoFollow = msg.get("value")?.asBoolean ?: true
+            "setLanguage" -> {
+                ClaudeFaSettings.get().language = if (str("value") == "fa") "fa" else "en"
+                PluginLog.info("ui", "language: " + ClaudeFaSettings.get().language)
+            }
             "attach" -> attach(str("kind"))
             "listCommands" -> pooled {
                 post("commands", JsonObject().apply { add("items", gson.toJsonTree(SlashCommands.list(project.basePath))) })
@@ -273,7 +278,11 @@ class ChatPanel(private val project: Project) : Disposable, PermissionBroker.Ui 
             }
             "logout" -> ApplicationManager.getApplication().invokeLater {
                 val ok = Messages.showYesNoDialog(
-                    project, "از حساب Claude خارج شوید؟ برای استفادهٔ دوباره باید در ترمینال «claude» را اجرا و وارد شوید.",
+                    project,
+                    I18n.tr(
+                        "Log out of Claude? To use it again, run \"claude\" in a terminal and log in.",
+                        "از حساب Claude خارج شوید؟ برای استفادهٔ دوباره باید در ترمینال «claude» را اجرا و وارد شوید.",
+                    ),
                     "ClaudeFA", Messages.getQuestionIcon(),
                 ) == Messages.YES
                 if (ok) pooled {
@@ -378,7 +387,7 @@ class ChatPanel(private val project: Project) : Disposable, PermissionBroker.Ui 
     }
 
     private fun sendAccount() {
-        val acc = CliInfo.account() ?: JsonObject().apply { addProperty("error", "claude پیدا نشد") }
+        val acc = CliInfo.account() ?: JsonObject().apply { addProperty("error", I18n.tr("claude not found", "claude پیدا نشد")) }
         post("account", acc)
     }
 
@@ -420,7 +429,7 @@ class ChatPanel(private val project: Project) : Disposable, PermissionBroker.Ui 
                 "image" -> FileChooserDescriptor(true, false, false, false, false, true)
                     .withFileFilter { it.extension?.lowercase() in setOf("png", "jpg", "jpeg", "gif", "webp") }
                 else -> FileChooserDescriptorFactory.createMultipleFilesNoJarsDescriptor()
-            }.withTitle("ClaudeFA: افزودن به پیام")
+            }.withTitle(I18n.tr("ClaudeFA: Add to Message", "ClaudeFA: افزودن به پیام"))
             FileChooser.chooseFiles(descriptor, project, project.guessProjectDir()) { files ->
                 val refs = files.joinToString(" ") { f -> relRef(f) + if (f.isDirectory) "/" else "" }
                 if (refs.isNotBlank()) insertIntoInput("$refs ", inline = true)
@@ -441,7 +450,13 @@ class ChatPanel(private val project: Project) : Disposable, PermissionBroker.Ui 
         val am = ActionManager.getInstance()
         val action = am.getAction(id)
         if (action == null) {
-            notify("این عمل در IDE شما در دسترس نیست ($id). شاید پلاگین Git فعال نباشد.", NotificationType.WARNING)
+            notify(
+                I18n.tr(
+                    "This action is not available in your IDE ($id). The Git plugin may be disabled.",
+                    "این عمل در IDE شما در دسترس نیست ($id). شاید پلاگین Git فعال نباشد.",
+                ),
+                NotificationType.WARNING,
+            )
             return
         }
         am.tryToExecute(action, null, browser.component, "ClaudeFA", true)
@@ -451,7 +466,7 @@ class ChatPanel(private val project: Project) : Disposable, PermissionBroker.Ui 
         ApplicationManager.getApplication().invokeLater {
             val editor = FileEditorManager.getInstance(project).selectedTextEditor
             if (editor == null) {
-                notify("هیچ ویرایشگری باز نیست.", NotificationType.WARNING)
+                notify(I18n.tr("No editor is open.", "هیچ ویرایشگری باز نیست."), NotificationType.WARNING)
                 return@invokeLater
             }
             WriteCommandAction.runWriteCommandAction(project, "Insert Code from Claude", null, {
@@ -491,6 +506,7 @@ class ChatPanel(private val project: Project) : Disposable, PermissionBroker.Ui 
             addProperty("shareSelection", s.shareSelection)
             addProperty("guardEnabled", s.guardEnabled)
             addProperty("autoFollow", s.autoFollow)
+            addProperty("language", I18n.lang)
         })
     }
 

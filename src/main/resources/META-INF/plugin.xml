@@ -4,9 +4,10 @@
     <vendor>ClaudeFA</vendor>
 
     <description><![CDATA[
-    <p>Chat with <b>Claude Code</b> inside IntelliJ-based IDEs with full Persian (Farsi) / RTL support.</p>
+    <p>Chat with <b>Claude Code</b> inside IntelliJ-based IDEs, in English or Persian (Farsi), with full RTL / bidi support.</p>
     <ul>
-      <li>Right-to-left chat panel with correct bidi rendering of mixed Persian/English text</li>
+      <li>English / Persian UI (switch from the chat toolbar); write to Claude in either language and get the reply in the same one</li>
+      <li>Per-paragraph LTR/RTL detection, so mixed Persian/English text never breaks</li>
       <li>Bundled Vazirmatn font</li>
       <li>Code blocks stay left-to-right, with Copy and Insert-at-caret buttons</li>
       <li>Review Claude's proposed edits in the IDE diff viewer and accept / reject (or tweak) them</li>
@@ -47,23 +48,23 @@
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
             <action id="ClaudeFa.SendSelection"
                     class="ir.claudefa.actions.SendSelectionAction"
-                    text="درج ارجاع فایل در گفتگو (@File#L1-99)"
+                    text="Insert File Reference in Chat (@File#L1-99)"
                     description="Insert a reference to the current file / selected lines into the Claude chat input">
                 <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
                 <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt shift K"/>
             </action>
             <action id="ClaudeFa.Explain"
                     class="ir.claudefa.actions.ExplainSelectionAction"
-                    text="توضیح این کد"
-                    description="Ask Claude to explain the selected code in Persian"/>
+                    text="Explain This Code"
+                    description="Ask Claude to explain the selected code"/>
             <action id="ClaudeFa.Review"
                     class="ir.claudefa.actions.ReviewSelectionAction"
-                    text="بررسی و پیشنهاد بهبود"
+                    text="Review and Suggest Improvements"
                     description="Ask Claude to review the selected code"/>
         </group>
         <action id="ClaudeFa.Open"
                 class="ir.claudefa.actions.OpenChatAction"
-                text="ClaudeFA: باز کردن گفتگو"
+                text="ClaudeFA: Open Chat"
                 icon="/icons/claude.svg"
                 description="Open the ClaudeFA chat">
             <add-to-group group-id="ToolsMenu" anchor="last"/>

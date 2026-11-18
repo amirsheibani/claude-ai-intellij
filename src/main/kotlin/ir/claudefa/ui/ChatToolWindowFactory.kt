@@ -9,6 +9,7 @@ import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.content.ContentFactory
 import com.intellij.ui.jcef.JBCefApp
+import ir.claudefa.I18n
 import javax.swing.SwingConstants
 
 class ChatToolWindowFactory : ToolWindowFactory, DumbAware {
@@ -23,9 +24,14 @@ class ChatToolWindowFactory : ToolWindowFactory, DumbAware {
         }
         if (!jcefSupported) {
             val label = JBLabel(
-                "<html><div dir='rtl' style='padding:16px'>این IDE از JCEF پشتیبانی نمی‌کند.<br>" +
-                    "مطمئن شوید پلاگین «Web Browser (JCEF)» فعال است، یا از Help › Find Action › " +
-                    "«Choose Boot Java Runtime» یک JBR با JCEF انتخاب کنید.</div></html>",
+                I18n.tr(
+                    "<html><div style='padding:16px'>This IDE does not support JCEF.<br>" +
+                        "Make sure the \"Web Browser (JCEF)\" plugin is enabled, or pick a JBR with JCEF via " +
+                        "Help › Find Action › \"Choose Boot Java Runtime\".</div></html>",
+                    "<html><div dir='rtl' style='padding:16px'>این IDE از JCEF پشتیبانی نمی‌کند.<br>" +
+                        "مطمئن شوید پلاگین «Web Browser (JCEF)» فعال است، یا از Help › Find Action › " +
+                        "«Choose Boot Java Runtime» یک JBR با JCEF انتخاب کنید.</div></html>",
+                ),
                 SwingConstants.CENTER,
             )
             toolWindow.contentManager.addContent(factory.createContent(label, "", false))

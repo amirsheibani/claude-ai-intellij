@@ -7,19 +7,24 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.project.guessProjectDir
+import ir.claudefa.I18n
 import ir.claudefa.ui.ChatToolWindowFactory
 
 /** Base for editor actions that turn the current selection into a prompt. */
 abstract class SelectionToClaudeAction : AnAction(), DumbAware {
 
-    /** Persian instruction placed before the code. Null = only insert into the input box. */
+    /** Instruction placed before the code (in the UI language). Null = only insert into the input box. */
     protected abstract val instruction: String?
 
     override fun getActionUpdateThread() = ActionUpdateThread.BGT
 
     override fun update(e: AnActionEvent) {
         e.presentation.isEnabledAndVisible = e.project != null && e.getData(CommonDataKeys.EDITOR) != null
+        menuText?.let { e.presentation.text = it }
     }
+
+    /** Localized menu label; null = keep the plugin.xml text. */
+    protected open val menuText: String? = null
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
@@ -41,7 +46,7 @@ abstract class SelectionToClaudeAction : AnAction(), DumbAware {
         }
         val lang = file?.extension.orEmpty()
 
-        val ref = "@$relPath (خطوط $startLine تا $endLine)"
+        val ref = "@$relPath " + I18n.tr("(lines $startLine-$endLine)", "(خطوط $startLine تا $endLine)")
         val block = "```$lang\n$code\n```"
         val prompt = buildString {
             instruction?.let { append(it).append("\n\n") }
@@ -64,6 +69,7 @@ class SendSelectionAction : AnAction(), DumbAware {
     override fun update(e: AnActionEvent) {
         e.presentation.isEnabledAndVisible = e.project != null &&
             (e.getData(CommonDataKeys.EDITOR) != null || e.getData(CommonDataKeys.VIRTUAL_FILE) != null)
+        e.presentation.text = I18n.tr("Insert File Reference in Chat (@File#L1-99)", "درج ارجاع فایل در گفتگو (@File#L1-99)")
     }
 
     override fun actionPerformed(e: AnActionEvent) {
@@ -84,18 +90,24 @@ class SendSelectionAction : AnAction(), DumbAware {
 }
 
 class ExplainSelectionAction : SelectionToClaudeAction() {
-    override val instruction = "این کد را به فارسی و قدم‌به‌قدم توضیح بده:"
+    override val instruction get() = I18n.tr("Explain this code step by step:", "این کد را به فارسی و قدم‌به‌قدم توضیح بده:")
+    override val menuText get() = I18n.tr("Explain This Code", "توضیح این کد")
 }
 
 class ReviewSelectionAction : SelectionToClaudeAction() {
-    override val instruction =
-        "این کد را بررسی کن: باگ‌ها، مشکلات امنیتی و کارایی را پیدا کن و پیشنهاد بهبود بده (فعلاً فایل را تغییر نده):"
+    override val instruction
+        get() = I18n.tr(
+            "Review this code: find bugs, security and performance issues and suggest improvements (do not change the file yet):",
+            "این کد را بررسی کن: باگ‌ها، مشکلات امنیتی و کارایی را پیدا کن و پیشنهاد بهبود بده (فعلاً فایل را تغییر نده):",
+        )
+    override val menuText get() = I18n.tr("Review and Suggest Improvements", "بررسی و پیشنهاد بهبود")
 }
 
 class OpenChatAction : AnAction(), DumbAware {
     override fun getActionUpdateThread() = ActionUpdateThread.BGT
     override fun update(e: AnActionEvent) {
         e.presentation.isEnabled = e.project != null
+        e.presentation.text = I18n.tr("ClaudeFA: Open Chat", "ClaudeFA: باز کردن گفتگو")
     }
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
