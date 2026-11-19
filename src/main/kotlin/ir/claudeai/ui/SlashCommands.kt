@@ -1,6 +1,6 @@
-package ir.claudefa.ui
+package ir.claudeai.ui
 
-import ir.claudefa.I18n
+import ir.claudeai.I18n
 import java.io.File
 
 /** Slash commands offered when the user types `/` in the chat input. */

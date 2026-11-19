@@ -1,4 +1,4 @@
-package ir.claudefa.ide
+package ir.claudeai.ide
 
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
@@ -22,7 +22,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
 
-import ir.claudefa.I18n
+import ir.claudeai.I18n
 import java.io.File
 
 /**

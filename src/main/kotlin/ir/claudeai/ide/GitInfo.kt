@@ -1,7 +1,7 @@
-package ir.claudefa.ide
+package ir.claudeai.ide
 
 import com.google.gson.JsonObject
-import ir.claudefa.I18n
+import ir.claudeai.I18n
 import java.io.File
 import java.util.concurrent.TimeUnit
 

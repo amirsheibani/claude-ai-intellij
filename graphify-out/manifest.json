@@ -1,8 +1,8 @@
 {
   "build.gradle.kts": {
-    "mtime": 1794822710.7003722,
-    "seen": 1794822734.7245078,
-    "ast_hash": "322caa4063331c4a6f224829f20f6a1a",
+    "mtime": 1795069574.5043492,
+    "seen": 1795069595.1573172,
+    "ast_hash": "3acd8c45b5044e246f2e39467c6a3344",
     "semantic_hash": ""
   },
   "gradlew": {
@@ -12,57 +12,21 @@
     "semantic_hash": "794669d78aef1dd5c7d889ef618b311a"
   },
   "settings.gradle.kts": {
-    "mtime": 1794818293.602212,
-    "seen": 1794820070.067435,
-    "ast_hash": "003010a5bc02fa5a12f28c3db23266fb",
-    "semantic_hash": "003010a5bc02fa5a12f28c3db23266fb"
-  },
-  "src/main/kotlin/ir/claudefa/actions/SelectionActions.kt": {
-    "mtime": 1794847744.1890142,
-    "seen": 1794848559.583107,
-    "ast_hash": "1cdcf6de6a847fd7e71c247b48b9e77c",
-    "semantic_hash": ""
-  },
-  "src/main/kotlin/ir/claudefa/cli/ClaudeCliRunner.kt": {
-    "mtime": 1794847707.5175765,
-    "seen": 1794848559.5831082,
-    "ast_hash": "caf9dc51ea095dab0ec4cbeb14bc4459",
-    "semantic_hash": ""
-  },
-  "src/main/kotlin/ir/claudefa/settings/ClaudeFaConfigurable.kt": {
-    "mtime": 1794847813.9277978,
-    "seen": 1794848559.5831208,
-    "ast_hash": "0512cd0bd9336ef2243287833ad7f4ba",
-    "semantic_hash": ""
-  },
-  "src/main/kotlin/ir/claudefa/settings/ClaudeFaSettings.kt": {
-    "mtime": 1794847696.6369538,
-    "seen": 1794848559.5831208,
-    "ast_hash": "9d56ddabb9661b2cf686f3810c795fb7",
-    "semantic_hash": ""
-  },
-  "src/main/kotlin/ir/claudefa/ui/ChatPanel.kt": {
-    "mtime": 1794847720.4286015,
-    "seen": 1794848559.583122,
-    "ast_hash": "a42608772133665866c2deea1d413871",
-    "semantic_hash": ""
-  },
-  "src/main/kotlin/ir/claudefa/ui/ChatToolWindowFactory.kt": {
-    "mtime": 1794847744.1885204,
-    "seen": 1794848559.583123,
-    "ast_hash": "d2b9e9b1f9586303487cdb1043d5e6b4",
+    "mtime": 1795069574.5052612,
+    "seen": 1795069595.157322,
+    "ast_hash": "1056c16dcb5e122008aa662aadc09957",
     "semantic_hash": ""
   },
   "src/main/resources/webview/chat.js": {
-    "mtime": 1794849427.8703601,
-    "seen": 1794849456.048186,
-    "ast_hash": "3e0a9565d9409d1debb6bc5d5770b8f0",
+    "mtime": 1795069574.528181,
+    "seen": 1795069595.157342,
+    "ast_hash": "f85362cfb26bebb13b665fc34c9c1ac9",
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1794822710.7056787,
-    "seen": 1794822734.7245288,
-    "ast_hash": "4cd25ff3deff9a01408b6bb37975d52a",
+    "mtime": 1795069574.5038805,
+    "seen": 1795069595.157352,
+    "ast_hash": "7e57faea421dc47ae34b6c660c07f01d",
     "semantic_hash": ""
   },
   "src/main/resources/webview/Vazirmatn-OFL.txt": {
@@ -72,51 +36,15 @@
     "semantic_hash": "88985b4355a8a44627dde041f10aba75"
   },
   "src/main/resources/webview/chat.html": {
-    "mtime": 1794848359.166426,
-    "seen": 1794848559.5831292,
-    "ast_hash": "50b98b5015af232622cb3e7033e68c6c",
+    "mtime": 1795069574.523069,
+    "seen": 1795069595.157355,
+    "ast_hash": "e25bd214ab52847f1c3e28e0da61b62f",
     "semantic_hash": ""
   },
   ".claude/settings.json": {
     "mtime": 1794820140.1253045,
     "seen": 1794820811.3842182,
     "ast_hash": "0b43fbe253e4f105715644c14d401af0",
-    "semantic_hash": ""
-  },
-  "src/main/kotlin/ir/claudefa/ide/DiffPreview.kt": {
-    "mtime": 1794848442.365608,
-    "seen": 1794848559.583112,
-    "ast_hash": "1badfcf202f556abb616716a9310543b",
-    "semantic_hash": ""
-  },
-  "src/main/kotlin/ir/claudefa/ide/IdeMcpServer.kt": {
-    "mtime": 1794824023.0309367,
-    "seen": 1794825526.340804,
-    "ast_hash": "598de7440e2717435e7e8a6439276a24",
-    "semantic_hash": ""
-  },
-  "src/main/kotlin/ir/claudefa/ide/IdeTools.kt": {
-    "mtime": 1794820479.8074944,
-    "seen": 1794820811.384233,
-    "ast_hash": "6af2cff6c4fbbd31f347c34b0a7d3ec3",
-    "semantic_hash": ""
-  },
-  "src/main/kotlin/ir/claudefa/ide/PermissionBroker.kt": {
-    "mtime": 1794824058.8724115,
-    "seen": 1794825526.340807,
-    "ast_hash": "85ef6c2bc772edd67c83e138c526bcba",
-    "semantic_hash": ""
-  },
-  "src/main/kotlin/ir/claudefa/ide/ProjectFileSearch.kt": {
-    "mtime": 1794820564.529249,
-    "seen": 1794820811.384235,
-    "ast_hash": "ab384c417edc7aa344215a77caa2b225",
-    "semantic_hash": ""
-  },
-  "src/main/kotlin/ir/claudefa/ide/SelectionTracker.kt": {
-    "mtime": 1794820498.3371818,
-    "seen": 1794820811.384236,
-    "ast_hash": "ead5a3a964e506a8376013587be12f9f",
     "semantic_hash": ""
   },
   "CLAUDE.md": {
@@ -137,52 +65,178 @@
     "ast_hash": "848529f66cad8aa085a7b01e05d73cfe",
     "semantic_hash": ""
   },
-  "src/main/kotlin/ir/claudefa/ui/SlashCommands.kt": {
-    "mtime": 1794847744.1874692,
-    "seen": 1794848559.583124,
-    "ast_hash": "a2cf882c81630cf2687d815efeeaafa1",
+  "src/main/kotlin/ir/claudeai/I18n.kt": {
+    "mtime": 1795069574.5057673,
+    "seen": 1795069595.1573231,
+    "ast_hash": "c5920f967f1bafbc4ad35755751bb3b1",
     "semantic_hash": ""
   },
-  "src/main/kotlin/ir/claudefa/PluginLog.kt": {
-    "mtime": 1794823943.5964744,
-    "seen": 1794825526.3407948,
-    "ast_hash": "3f7320575787109461326b1005a00a33",
+  "src/main/kotlin/ir/claudeai/PluginLog.kt": {
+    "mtime": 1795069574.506165,
+    "seen": 1795069595.157325,
+    "ast_hash": "8bebe3b0890628fd8d7b7815fc01bd65",
     "semantic_hash": ""
   },
-  "src/main/kotlin/ir/claudefa/cli/CliInfo.kt": {
-    "mtime": 1794827171.1066256,
-    "seen": 1794827579.551185,
-    "ast_hash": "183aa5c845f68c2f2c53219e75008f75",
+  "src/main/kotlin/ir/claudeai/actions/SelectionActions.kt": {
+    "mtime": 1795069574.5068424,
+    "seen": 1795069595.157326,
+    "ast_hash": "45d20a80ee576e50b92f8fc03f05a611",
     "semantic_hash": ""
   },
-  "src/main/kotlin/ir/claudefa/ide/DependencyScanner.kt": {
-    "mtime": 1794824003.958467,
-    "seen": 1794825526.3408,
-    "ast_hash": "d4c60d7021ca94943101621dd4f9abd6",
+  "src/main/kotlin/ir/claudeai/cli/ClaudeCliRunner.kt": {
+    "mtime": 1795069574.5075045,
+    "seen": 1795069595.1573272,
+    "ast_hash": "8f547086fcfc628fa92936a7ea27f165",
     "semantic_hash": ""
   },
-  "src/main/kotlin/ir/claudefa/ide/GitInfo.kt": {
-    "mtime": 1794847744.1868844,
-    "seen": 1794848559.583113,
-    "ast_hash": "6b4d7042a45fcad9872a54f8f2b4ed34",
+  "src/main/kotlin/ir/claudeai/cli/ClaudeConfig.kt": {
+    "mtime": 1795069574.5082266,
+    "seen": 1795069595.1573272,
+    "ast_hash": "c27abb9acb5a8eba96ad1a7291d5f413",
     "semantic_hash": ""
   },
-  "src/main/kotlin/ir/claudefa/ide/Guard.kt": {
-    "mtime": 1794847753.983211,
-    "seen": 1794848559.583114,
-    "ast_hash": "6349513c8bfd53df431265381ec4e5ba",
+  "src/main/kotlin/ir/claudeai/cli/CliInfo.kt": {
+    "mtime": 1795069574.5087376,
+    "seen": 1795069595.157328,
+    "ast_hash": "978b740986141900079e887bc67eceb5",
     "semantic_hash": ""
   },
-  "src/main/kotlin/ir/claudefa/cli/ClaudeConfig.kt": {
-    "mtime": 1794826345.9820328,
-    "seen": 1794826637.148791,
-    "ast_hash": "89d5ee87f2aa53196928db53ee21cacf",
+  "src/main/kotlin/ir/claudeai/ide/DependencyScanner.kt": {
+    "mtime": 1795069574.5111117,
+    "seen": 1795069595.1573288,
+    "ast_hash": "78e5d960f8517ddd9dc1979928bf3b45",
     "semantic_hash": ""
   },
-  "src/main/kotlin/ir/claudefa/I18n.kt": {
-    "mtime": 1794847693.2068715,
-    "seen": 1794848559.583104,
-    "ast_hash": "ae6df2cf5e9d5893219a9817b31818d0",
+  "src/main/kotlin/ir/claudeai/ide/DiffPreview.kt": {
+    "mtime": 1795069574.5117645,
+    "seen": 1795069595.15733,
+    "ast_hash": "7f577158ddec86f0fdef36374ec09d5b",
+    "semantic_hash": ""
+  },
+  "src/main/kotlin/ir/claudeai/ide/GitInfo.kt": {
+    "mtime": 1795069574.5121784,
+    "seen": 1795069595.157331,
+    "ast_hash": "2c0a8444cf84d2efaf8da805de9f833a",
+    "semantic_hash": ""
+  },
+  "src/main/kotlin/ir/claudeai/ide/Guard.kt": {
+    "mtime": 1795069574.512727,
+    "seen": 1795069595.157332,
+    "ast_hash": "a61571932b962b070bcfd72c1e42e331",
+    "semantic_hash": ""
+  },
+  "src/main/kotlin/ir/claudeai/ide/IdeMcpServer.kt": {
+    "mtime": 1795069574.5134661,
+    "seen": 1795069595.157333,
+    "ast_hash": "1727c8f27cc8c64b35c77e0a10e439a7",
+    "semantic_hash": ""
+  },
+  "src/main/kotlin/ir/claudeai/ide/IdeTools.kt": {
+    "mtime": 1795069574.514002,
+    "seen": 1795069595.157334,
+    "ast_hash": "f641ac0b345ac20cbc09d96a13e35b6c",
+    "semantic_hash": ""
+  },
+  "src/main/kotlin/ir/claudeai/ide/PermissionBroker.kt": {
+    "mtime": 1795069574.5148542,
+    "seen": 1795069595.157334,
+    "ast_hash": "d53e90ddd51590a4f9c980974a00540e",
+    "semantic_hash": ""
+  },
+  "src/main/kotlin/ir/claudeai/ide/ProjectFileSearch.kt": {
+    "mtime": 1795069574.5164495,
+    "seen": 1795069595.157335,
+    "ast_hash": "5bc0dd34595b7afa972b71dcbf7bd5ee",
+    "semantic_hash": ""
+  },
+  "src/main/kotlin/ir/claudeai/ide/SelectionTracker.kt": {
+    "mtime": 1795069574.5171494,
+    "seen": 1795069595.157336,
+    "ast_hash": "6c510f7eab0e63d9689778705ff8eea7",
+    "semantic_hash": ""
+  },
+  "src/main/kotlin/ir/claudeai/settings/ClaudeAiConfigurable.kt": {
+    "mtime": 1795069574.5177293,
+    "seen": 1795069595.1573372,
+    "ast_hash": "412afbf9424445d0b1abd04ba135d8b2",
+    "semantic_hash": ""
+  },
+  "src/main/kotlin/ir/claudeai/settings/ClaudeAiSettings.kt": {
+    "mtime": 1795069574.5191662,
+    "seen": 1795069595.1573381,
+    "ast_hash": "81766d36382d49a711b430d8d5fa7484",
+    "semantic_hash": ""
+  },
+  "src/main/kotlin/ir/claudeai/ui/ChatPanel.kt": {
+    "mtime": 1795069574.5203695,
+    "seen": 1795069595.1573389,
+    "ast_hash": "786a266946db7d1bf730f72d0caf5ddf",
+    "semantic_hash": ""
+  },
+  "src/main/kotlin/ir/claudeai/ui/ChatToolWindowFactory.kt": {
+    "mtime": 1795069574.520893,
+    "seen": 1795069595.1573389,
+    "ast_hash": "6b93bcb9fa59964300776ff159b4f5dc",
+    "semantic_hash": ""
+  },
+  "src/main/kotlin/ir/claudeai/ui/SlashCommands.kt": {
+    "mtime": 1795069574.521293,
+    "seen": 1795069595.1573398,
+    "ast_hash": "abdc34b37ada975d1f714c39c0c31cfa",
+    "semantic_hash": ""
+  },
+  ".claude/rules/plugin-agent-workflow.md": {
+    "mtime": 1795067494.5142307,
+    "seen": 1795069595.157343,
+    "ast_hash": "eabae9720f6cb9624ce94a683ffb4c57",
+    "semantic_hash": ""
+  },
+  ".claude/rules/plugin-confirm-before-edit.md": {
+    "mtime": 1795067396.7645175,
+    "seen": 1795069595.157344,
+    "ast_hash": "08e71ec7c6d2d6fb02c706ac9d8f3fa7",
+    "semantic_hash": ""
+  },
+  ".claude/rules/plugin-donts.md": {
+    "mtime": 1795067481.6047566,
+    "seen": 1795069595.157344,
+    "ast_hash": "810e74c0e1e4937ce27c0589493d0542",
+    "semantic_hash": ""
+  },
+  ".claude/rules/plugin-git.md": {
+    "mtime": 1795067409.9375043,
+    "seen": 1795069595.157345,
+    "ast_hash": "f48cea68828611edf2a4e45e7fe19ed5",
+    "semantic_hash": ""
+  },
+  ".claude/skills/debug-hypotheses/SKILL.md": {
+    "mtime": 1794312471.403026,
+    "seen": 1795069595.157346,
+    "ast_hash": "89234ad00a74ad480e211004aa1b46d9",
+    "semantic_hash": ""
+  },
+  ".claude/skills/explore-feature/SKILL.md": {
+    "mtime": 1795067508.1433365,
+    "seen": 1795069595.157347,
+    "ast_hash": "71c6ae6b0f457429adde5caaa5fbf9ba",
+    "semantic_hash": ""
+  },
+  ".claude/skills/implement/SKILL.md": {
+    "mtime": 1795067518.1025865,
+    "seen": 1795069595.1573482,
+    "ast_hash": "cb228c49f4efae854e6c4df37312391c",
+    "semantic_hash": ""
+  },
+  ".claude/skills/scaffold-feature/SKILL.md": {
+    "mtime": 1795067514.4154882,
+    "seen": 1795069595.157349,
+    "ast_hash": "c6d98fad2a49f4cc629997aad10e6dae",
+    "semantic_hash": ""
+  },
+  ".claude/skills/senior-review/SKILL.md": {
+    "mtime": 1795067524.377013,
+    "seen": 1795069595.1573498,
+    "ast_hash": "26278dd93da51eb7b4266579eaaed738",
     "semantic_hash": ""
   }
 }

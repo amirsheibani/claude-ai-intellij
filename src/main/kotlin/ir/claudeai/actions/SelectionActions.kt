@@ -1,4 +1,4 @@
-package ir.claudefa.actions
+package ir.claudeai.actions
 
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
@@ -7,8 +7,8 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.project.guessProjectDir
-import ir.claudefa.I18n
-import ir.claudefa.ui.ChatToolWindowFactory
+import ir.claudeai.I18n
+import ir.claudeai.ui.ChatToolWindowFactory
 
 /** Base for editor actions that turn the current selection into a prompt. */
 abstract class SelectionToClaudeAction : AnAction(), DumbAware {
@@ -107,7 +107,7 @@ class OpenChatAction : AnAction(), DumbAware {
     override fun getActionUpdateThread() = ActionUpdateThread.BGT
     override fun update(e: AnActionEvent) {
         e.presentation.isEnabled = e.project != null
-        e.presentation.text = I18n.tr("ClaudeFA: Open Chat", "ClaudeFA: باز کردن گفتگو")
+        e.presentation.text = I18n.tr("ClaudeAi: Open Chat", "ClaudeAi: باز کردن گفتگو")
     }
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return

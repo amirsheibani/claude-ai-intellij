@@ -1,4 +1,4 @@
-package ir.claudefa.cli
+package ir.claudeai.cli
 
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
@@ -8,10 +8,10 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.util.execution.ParametersListUtil
-import ir.claudefa.I18n
-import ir.claudefa.PluginLog
-import ir.claudefa.ide.IdeMcpServer
-import ir.claudefa.settings.ClaudeFaSettings
+import ir.claudeai.I18n
+import ir.claudeai.PluginLog
+import ir.claudeai.ide.IdeMcpServer
+import ir.claudeai.settings.ClaudeAiSettings
 import java.io.File
 import java.nio.charset.StandardCharsets.UTF_8
 
@@ -50,15 +50,15 @@ class ClaudeCliRunner(
      */
     fun send(prompt: String, mcpConfigPath: String? = null) {
         if (isRunning) return
-        val s = ClaudeFaSettings.get()
+        val s = ClaudeAiSettings.get()
         val exe = locateCli(s.cliPath)
         if (exe == null) {
             listener.onStartFailed(
                 I18n.tr(
                     "The claude executable was not found. Install Claude Code first " +
-                        "(npm install -g @anthropic-ai/claude-code) or set its path in Settings › Tools › ClaudeFA.",
+                        "(npm install -g @anthropic-ai/claude-code) or set its path in Settings › Tools › ClaudeAi.",
                     "فایل اجرایی claude پیدا نشد. ابتدا Claude Code را نصب کنید " +
-                        "(npm install -g @anthropic-ai/claude-code) یا مسیر آن را در Settings › Tools › ClaudeFA وارد کنید.",
+                        "(npm install -g @anthropic-ai/claude-code) یا مسیر آن را در Settings › Tools › ClaudeAi وارد کنید.",
                 )
             )
             return

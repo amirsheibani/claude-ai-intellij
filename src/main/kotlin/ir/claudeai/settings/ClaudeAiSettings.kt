@@ -1,4 +1,4 @@
-package ir.claudefa.settings
+package ir.claudeai.settings
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.PersistentStateComponent
@@ -6,8 +6,8 @@ import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.util.xmlb.XmlSerializerUtil
 
-@State(name = "ClaudeFaSettings", storages = [Storage("claude-fa.xml")])
-class ClaudeFaSettings : PersistentStateComponent<ClaudeFaSettings.State> {
+@State(name = "ClaudeAiSettings", storages = [Storage("claude-ai.xml")])
+class ClaudeAiSettings : PersistentStateComponent<ClaudeAiSettings.State> {
 
     class State {
         /** Path to the `claude` executable. Empty = auto-detect. */
@@ -54,6 +54,6 @@ class ClaudeFaSettings : PersistentStateComponent<ClaudeFaSettings.State> {
 
     companion object {
         fun get(): State =
-            ApplicationManager.getApplication().getService(ClaudeFaSettings::class.java).state
+            ApplicationManager.getApplication().getService(ClaudeAiSettings::class.java).state
     }
 }

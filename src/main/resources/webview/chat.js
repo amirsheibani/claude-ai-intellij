@@ -258,7 +258,7 @@
     return w;
   }
   function fillWelcome(w) {
-    w.querySelector(".wt").innerHTML = tr("Welcome to <b>ClaudeFA</b>!", "به <b>ClaudeFA</b> خوش آمدید!");
+    w.querySelector(".wt").innerHTML = tr("Welcome to <b>ClaudeAi</b>!", "به <b>ClaudeAi</b> خوش آمدید!");
     w.querySelector(".cwd").textContent = "cwd: " + G.projectPath;
     const tips = tr([
       "Ask questions, edit code or run commands — in English or Persian.",
@@ -472,9 +472,9 @@
     LS: ["Listing", "فهرست"], WebFetch: ["Fetching a page", "دریافت صفحه"], WebSearch: ["Searching the web", "جستجوی وب"],
     Task: ["Running a subagent", "زیرعامل"], Agent: ["Running a subagent", "زیرعامل"], TodoWrite: ["Updating todos", "فهرست کارها"],
     NotebookEdit: ["Editing a notebook", "ویرایش نوت‌بوک"],
-    mcp__claudefa__getDiagnostics: ["Checking IDE diagnostics", "بررسی خطاهای IDE"], mcp__claudefa__getOpenEditors: ["Reading open editors", "فایل‌های باز IDE"],
-    mcp__claudefa__getCurrentSelection: ["Reading the IDE selection", "انتخاب فعلی IDE"], mcp__claudefa__openFile: ["Opening a file in the IDE", "باز کردن فایل در IDE"],
-    mcp__claudefa__getWorkspaceFolders: ["Reading project folders", "پوشه‌های پروژه"],
+    mcp__claudeai__getDiagnostics: ["Checking IDE diagnostics", "بررسی خطاهای IDE"], mcp__claudeai__getOpenEditors: ["Reading open editors", "فایل‌های باز IDE"],
+    mcp__claudeai__getCurrentSelection: ["Reading the IDE selection", "انتخاب فعلی IDE"], mcp__claudeai__openFile: ["Opening a file in the IDE", "باز کردن فایل در IDE"],
+    mcp__claudeai__getWorkspaceFolders: ["Reading project folders", "پوشه‌های پروژه"],
   };
   function toolLabel(name) {
     const l = TOOL_LABEL[name];
@@ -485,7 +485,7 @@
     if (name === "Edit" || name === "MultiEdit") return "Update";
     if (name === "TodoWrite") return "Update Todos";
     const m = /^mcp__(.+?)__(.+)$/.exec(name || "");
-    if (m) return (m[1] === "claudefa" ? "ide" : m[1]) + " - " + m[2] + " (MCP)";
+    if (m) return (m[1] === "claudeai" ? "ide" : m[1]) + " - " + m[2] + " (MCP)";
     return name;
   }
 
@@ -998,7 +998,7 @@
           if (ev.session_id) c.sessionId = ev.session_id;
           if (!c.connected) {
             c.connected = true;
-            const mcp = (ev.mcp_servers || []).find((m) => m.name === "claudefa");
+            const mcp = (ev.mcp_servers || []).find((m) => m.name === "claudeai");
             const ide = mcp && mcp.status === "connected";
             notice(c, c.main, tr("✓ Ready — Claude Code " + (ide ? "connected to the IDE" : "started"), "✓ آماده — Claude Code" + (ide ? " به IDE متصل شد" : " اجرا شد")), "");
           }
@@ -1054,7 +1054,7 @@
     ["Sonnet", [["claude-sonnet-5-5", "Sonnet 5.5"], ["claude-sonnet-5", "Sonnet 5"], ["claude-sonnet-4-6", "Sonnet 4.6"],
       ["claude-sonnet-4-5", "Sonnet 4.5"], ["claude-sonnet-4-0", "Sonnet 4"]]],
     ["Haiku", [["claude-haiku-5-5", "Haiku 5.5"], ["claude-haiku-4-5", "Haiku 4.5"]]],
-    ["Fable", [["claude-fable-5-2", "Fable 5.2"], ["claude-fable-5-1", "Fable 5.1"], ["claude-fable-5", "Fable 5"]]],
+    ["Fable", [["claude-aible-5-2", "Fable 5.2"], ["claude-aible-5-1", "Fable 5.1"], ["claude-aible-5", "Fable 5"]]],
   ];
   const allModels = () => models().concat(...MODEL_FAMILIES.map((f) => f[1]));
   const EFFORTS = [["", "Default"], ["low", "Low"], ["medium", "Medium"], ["high", "High"], ["xhigh", "XHigh"], ["max", "Max"]];

@@ -1,9 +1,9 @@
-package ir.claudefa.ide
+package ir.claudeai.ide
 
 import com.google.gson.JsonObject
-import ir.claudefa.I18n
-import ir.claudefa.PluginLog
-import ir.claudefa.settings.ClaudeFaSettings
+import ir.claudeai.I18n
+import ir.claudeai.PluginLog
+import ir.claudeai.settings.ClaudeAiSettings
 import java.io.File
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -106,7 +106,7 @@ object Guard {
 
     /** The first matching enabled rule, or null. Logs "disabled" when only a disabled rule matched. */
     fun evaluate(chat: String, tool: String, input: JsonObject, projectDir: String?): Rule? {
-        val s = ClaudeFaSettings.get()
+        val s = ClaudeAiSettings.get()
         val t = target(tool, input)
         if (t.isBlank()) return null
         val hits = RULES.filter { tool in it.tools && runCatching { it.matches(t, projectDir) }.getOrDefault(false) }
@@ -139,12 +139,12 @@ object Guard {
     fun decisions(): List<Decision> = synchronized(log) { log.toList() }
 
     fun whitelist(target: String) {
-        val s = ClaudeFaSettings.get()
+        val s = ClaudeAiSettings.get()
         if (target.isNotBlank() && target !in s.guardWhitelist) s.guardWhitelist = s.guardWhitelist + target
     }
 
     fun setRuleEnabled(id: String, enabled: Boolean) {
-        val s = ClaudeFaSettings.get()
+        val s = ClaudeAiSettings.get()
         s.guardDisabledRules = if (enabled) s.guardDisabledRules - id else (s.guardDisabledRules + id).distinct()
     }
 }

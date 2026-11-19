@@ -1,4 +1,4 @@
-package ir.claudefa.settings
+package ir.claudeai.settings
 
 import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.ui.DialogPanel
@@ -9,11 +9,11 @@ import com.intellij.ui.dsl.builder.bindItem
 import com.intellij.ui.dsl.builder.bindSelected
 import com.intellij.ui.dsl.builder.bindText
 import com.intellij.ui.dsl.builder.panel
-import ir.claudefa.I18n.tr
+import ir.claudeai.I18n.tr
 
-class ClaudeFaConfigurable : BoundConfigurable("ClaudeFA") {
+class ClaudeAiConfigurable : BoundConfigurable("ClaudeAi") {
 
-    private val s get() = ClaudeFaSettings.get()
+    private val s get() = ClaudeAiSettings.get()
 
     override fun createPanel(): DialogPanel = panel {
         group(tr("Connection to Claude Code", "اتصال به Claude Code")) {

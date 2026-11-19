@@ -1,4 +1,4 @@
-package ir.claudefa.ui
+package ir.claudeai.ui
 
 import com.google.gson.Gson
 import com.google.gson.JsonArray
@@ -33,19 +33,19 @@ import com.intellij.ui.jcef.JBCefBrowser
 import com.intellij.ui.jcef.JBCefBrowserBase
 import com.intellij.ui.jcef.JBCefJSQuery
 import com.intellij.util.ui.UIUtil
-import ir.claudefa.I18n
-import ir.claudefa.PluginLog
-import ir.claudefa.cli.ClaudeCliRunner
-import ir.claudefa.cli.CliInfo
-import ir.claudefa.cli.ClaudeConfig
-import ir.claudefa.ide.DependencyScanner
-import ir.claudefa.ide.GitInfo
-import ir.claudefa.ide.Guard
-import ir.claudefa.ide.IdeMcpServer
-import ir.claudefa.ide.PermissionBroker
-import ir.claudefa.ide.ProjectFileSearch
-import ir.claudefa.ide.SelectionTracker
-import ir.claudefa.settings.ClaudeFaSettings
+import ir.claudeai.I18n
+import ir.claudeai.PluginLog
+import ir.claudeai.cli.ClaudeCliRunner
+import ir.claudeai.cli.CliInfo
+import ir.claudeai.cli.ClaudeConfig
+import ir.claudeai.ide.DependencyScanner
+import ir.claudeai.ide.GitInfo
+import ir.claudeai.ide.Guard
+import ir.claudeai.ide.IdeMcpServer
+import ir.claudeai.ide.PermissionBroker
+import ir.claudeai.ide.ProjectFileSearch
+import ir.claudeai.ide.SelectionTracker
+import ir.claudeai.settings.ClaudeAiSettings
 import org.cef.browser.CefBrowser
 import org.cef.browser.CefFrame
 import org.cef.handler.CefLoadHandlerAdapter
@@ -58,7 +58,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import javax.swing.JComponent
 
 /**
- * The ClaudeFA tool window: a JCEF page hosting several chats (tabs). Each chat has its own
+ * The ClaudeAi tool window: a JCEF page hosting several chats (tabs). Each chat has its own
  * Claude CLI process ([ClaudeCliRunner]); messages to the page carry the chat id.
  */
 class ChatPanel(private val project: Project) : Disposable, PermissionBroker.Ui {
@@ -175,7 +175,7 @@ class ChatPanel(private val project: Project) : Disposable, PermissionBroker.Ui 
 
     /** Prepends what the user is looking at in the IDE, like the official plugin's selection sharing. */
     private fun withIdeContext(text: String): String {
-        if (!ClaudeFaSettings.get().shareSelection) return text
+        if (!ClaudeAiSettings.get().shareSelection) return text
         val snap = tracker.snapshot() ?: return text
         val ctx = if (snap.text != null && snap.text.isNotBlank()) {
             "The user is viewing `${snap.relPath}` in the IDE and has selected lines ${snap.startLine}-${snap.endLine}:\n" +
@@ -243,13 +243,13 @@ class ChatPanel(private val project: Project) : Disposable, PermissionBroker.Ui 
                 }
             }
             "recentFiles" -> ApplicationManager.getApplication().invokeLater { sendRecentFiles() }
-            "setMode" -> ClaudeFaSettings.get().permissionMode = str("value")
-            "setModel" -> ClaudeFaSettings.get().model = str("value")
-            "setEffort" -> ClaudeFaSettings.get().effort = str("value")
-            "setAutoFollow" -> ClaudeFaSettings.get().autoFollow = msg.get("value")?.asBoolean ?: true
+            "setMode" -> ClaudeAiSettings.get().permissionMode = str("value")
+            "setModel" -> ClaudeAiSettings.get().model = str("value")
+            "setEffort" -> ClaudeAiSettings.get().effort = str("value")
+            "setAutoFollow" -> ClaudeAiSettings.get().autoFollow = msg.get("value")?.asBoolean ?: true
             "setLanguage" -> {
-                ClaudeFaSettings.get().language = if (str("value") == "fa") "fa" else "en"
-                PluginLog.info("ui", "language: " + ClaudeFaSettings.get().language)
+                ClaudeAiSettings.get().language = if (str("value") == "fa") "fa" else "en"
+                PluginLog.info("ui", "language: " + ClaudeAiSettings.get().language)
             }
             "attach" -> attach(str("kind"))
             "listCommands" -> pooled {
@@ -260,7 +260,7 @@ class ChatPanel(private val project: Project) : Disposable, PermissionBroker.Ui 
             "insertCode" -> insertAtCaret(str("text"))
             "openFile" -> openFile(str("path"), msg.get("line")?.asInt ?: 0)
             "settings" -> ApplicationManager.getApplication().invokeLater {
-                ShowSettingsUtil.getInstance().showSettingsDialog(project, "ClaudeFA")
+                ShowSettingsUtil.getInstance().showSettingsDialog(project, "ClaudeAi")
                 sendInit()
             }
 
@@ -283,7 +283,7 @@ class ChatPanel(private val project: Project) : Disposable, PermissionBroker.Ui 
                         "Log out of Claude? To use it again, run \"claude\" in a terminal and log in.",
                         "از حساب Claude خارج شوید؟ برای استفادهٔ دوباره باید در ترمینال «claude» را اجرا و وارد شوید.",
                     ),
-                    "ClaudeFA", Messages.getQuestionIcon(),
+                    "ClaudeAi", Messages.getQuestionIcon(),
                 ) == Messages.YES
                 if (ok) pooled {
                     CliInfo.logout()
@@ -320,7 +320,7 @@ class ChatPanel(private val project: Project) : Disposable, PermissionBroker.Ui 
             // ----- Guard tab
             "guard" -> post("guard", guardJson())
             "guardToggle" -> {
-                ClaudeFaSettings.get().guardEnabled = msg.get("value")?.asBoolean ?: true
+                ClaudeAiSettings.get().guardEnabled = msg.get("value")?.asBoolean ?: true
                 post("guard", guardJson())
             }
             "guardRule" -> {
@@ -332,7 +332,7 @@ class ChatPanel(private val project: Project) : Disposable, PermissionBroker.Ui 
                 post("guard", guardJson())
             }
             "guardUnwhitelist" -> {
-                val s = ClaudeFaSettings.get()
+                val s = ClaudeAiSettings.get()
                 s.guardWhitelist = s.guardWhitelist - str("target")
                 post("guard", guardJson())
             }
@@ -392,7 +392,7 @@ class ChatPanel(private val project: Project) : Disposable, PermissionBroker.Ui 
     }
 
     private fun guardJson() = JsonObject().apply {
-        val s = ClaudeFaSettings.get()
+        val s = ClaudeAiSettings.get()
         addProperty("enabled", s.guardEnabled)
         add("whitelist", gson.toJsonTree(s.guardWhitelist))
         add("rules", JsonArray().apply {
@@ -429,7 +429,7 @@ class ChatPanel(private val project: Project) : Disposable, PermissionBroker.Ui 
                 "image" -> FileChooserDescriptor(true, false, false, false, false, true)
                     .withFileFilter { it.extension?.lowercase() in setOf("png", "jpg", "jpeg", "gif", "webp") }
                 else -> FileChooserDescriptorFactory.createMultipleFilesNoJarsDescriptor()
-            }.withTitle(I18n.tr("ClaudeFA: Add to Message", "ClaudeFA: افزودن به پیام"))
+            }.withTitle(I18n.tr("ClaudeAi: Add to Message", "ClaudeAi: افزودن به پیام"))
             FileChooser.chooseFiles(descriptor, project, project.guessProjectDir()) { files ->
                 val refs = files.joinToString(" ") { f -> relRef(f) + if (f.isDirectory) "/" else "" }
                 if (refs.isNotBlank()) insertIntoInput("$refs ", inline = true)
@@ -459,7 +459,7 @@ class ChatPanel(private val project: Project) : Disposable, PermissionBroker.Ui 
             )
             return
         }
-        am.tryToExecute(action, null, browser.component, "ClaudeFA", true)
+        am.tryToExecute(action, null, browser.component, "ClaudeAi", true)
     }
 
     private fun insertAtCaret(text: String) {
@@ -492,7 +492,7 @@ class ChatPanel(private val project: Project) : Disposable, PermissionBroker.Ui 
     // ---------------------------------------------------------------- IDE -> JS
 
     private fun sendInit() {
-        val s = ClaudeFaSettings.get()
+        val s = ClaudeAiSettings.get()
         post("init", JsonObject().apply {
             addProperty("dark", !JBColor.isBright())
             addProperty("bg", hex(UIUtil.getPanelBackground()))
@@ -522,7 +522,7 @@ class ChatPanel(private val project: Project) : Disposable, PermissionBroker.Ui 
     }
 
     private fun notify(text: String, type: NotificationType) {
-        NotificationGroupManager.getInstance().getNotificationGroup("ClaudeFA")
+        NotificationGroupManager.getInstance().getNotificationGroup("ClaudeAi")
             .createNotification(text, type).notify(project)
     }
 

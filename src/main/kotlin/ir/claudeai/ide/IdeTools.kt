@@ -1,4 +1,4 @@
-package ir.claudefa.ide
+package ir.claudeai.ide
 
 import com.google.gson.Gson
 import com.google.gson.JsonArray
