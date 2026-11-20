@@ -1,5 +1,7 @@
 # ClaudeAi — پلاگین IntelliJ برای Claude Code با پشتیبانی کامل فارسی
 
+> **English:** Claude Code chat panel for JetBrains IDEs with full Persian/RTL support. [Read the English README →](README.en.md)
+
 پنل گفتگو با Claude Code داخل IDEهای JetBrains (IntelliJ IDEA، Android Studio، PyCharm، WebStorm و ...)،
 با نمایش درست متن فارسی، راست‌به‌چپ و متن‌های ترکیبی فارسی/انگلیسی.
 
