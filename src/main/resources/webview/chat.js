@@ -377,13 +377,42 @@
     const box = $("subTabs");
     if (!c) return (box.innerHTML = "");
     let html = '<div class="pill' + (c.viewAgent ? "" : " active") + '" data-agent="">' + tr("Chat", "گفتگو") + "</div>";
-    c.agentOrder.forEach((aid) => {
-      const a = c.agents[aid];
-      const dot = a.status === "running" ? "busy" : a.status === "error" ? "err" : "ok";
-      html += '<div class="pill agent' + (c.viewAgent === aid ? " active" : "") + '" data-agent="' + aid + '" title="' + esc(a.desc) + '">' +
-        '<span class="dot ' + dot + '"></span><span class="t" dir="' + textDir(a.desc, "ltr") + '">' + esc(a.desc || a.type || "Agent") + "</span></div>";
+    // waiting for the user → running → finished/failed; creation order within each group
+    const rank = (a) => (a.status !== "running" ? 2 : agentWaiting(c, a) ? 0 : 1);
+    const list = c.agentOrder.map((aid, i) => ({ a: c.agents[aid], i }))
+      .sort((x, y) => rank(x.a) - rank(y.a) || x.i - y.i).map((x) => x.a);
+    list.forEach((a) => {
+      const aid = a.id;
+      const waiting = a.status === "running" && agentWaiting(c, a);
+      const st = waiting ? "waiting" : a.status;
+      const dot = waiting ? "warn" : a.status === "running" ? "busy" : a.status === "error" ? "err" : "ok";
+      const del = a.status !== "running"
+        ? '<span class="x" data-del-agent="' + esc(aid) + '" title="' + tr("Remove", "حذف") + '">×</span>' : "";
+      html += '<div class="pill agent ' + st + (c.viewAgent === aid ? " active" : "") + '" data-agent="' + esc(aid) + '" title="' + esc(a.desc) + '">' +
+        '<span class="dot ' + dot + '"></span><span class="t" dir="' + textDir(a.desc, "ltr") + '">' + esc(a.desc || a.type || "Agent") + "</span>" + del + "</div>";
     });
     box.innerHTML = html;
+    const act = box.querySelector(".pill.active");
+    if (act) act.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }
+
+  /** True if a pending permission prompt belongs to a tool running inside this subagent. */
+  function agentWaiting(c, a) {
+    return Object.keys(c.perms).some((pid) => {
+      const t = c.tools[pid];
+      return t && t.T === a.T;
+    });
+  }
+
+  function removeAgent(c, aid) {
+    const a = c.agents[aid];
+    if (!a || a.status === "running") return;
+    a.el.remove();
+    delete c.agents[aid];
+    c.agentOrder = c.agentOrder.filter((x) => x !== aid);
+    if (c.viewAgent === aid) return showAgent(c, null);
+    if (c === chat()) renderSubTabs();
+    if (G.view === "workloads") renderWorkloads();
   }
 
   // ==================================================================== rendering into a target (main chat or subagent)
@@ -415,6 +444,17 @@
       else ln.appendChild(document.createElement("br"));
       box.appendChild(ln);
     });
+    d._text = String(text);
+    const acts = document.createElement("span");
+    acts.className = "uacts";
+    [["copy", "⧉", tr("Copy", "کپی")], ["rerun", "↻", tr("Run again", "اجرای مجدد")]].forEach((b) => {
+      const btn = document.createElement("button");
+      btn.dataset.uact = b[0];
+      btn.textContent = b[1];
+      btn.title = b[2];
+      acts.appendChild(btn);
+    });
+    d.appendChild(acts);
     T.el.appendChild(d);
     T.turn = null;
     scrollDown(T, true);
@@ -694,6 +734,7 @@
     else turnEl(T).appendChild(card);
     c.statusText = tr("Waiting for your approval…", "منتظر تأیید شما…");
     if (c === chat()) {
+      renderSubTabs();
       setStatus(c.statusText);
       scrollDown(T, true);
       if (!inputEl.value.trim()) card.focus();
@@ -704,6 +745,7 @@
     const card = c.perms[p.id];
     if (!card) return;
     delete c.perms[p.id];
+    if (c === chat()) renderSubTabs();
     card.classList.add("resolved");
     const o = document.createElement("div");
     const ok = p.outcome !== "denied";
@@ -776,6 +818,7 @@
     $("btnStop").classList.toggle("hidden", !b);
     $("status").classList.toggle("hidden", !b);
     $("infoState").classList.toggle("busy", b);
+    $("chatLogs").classList.toggle("busy", b);
     $("infoStateText").textContent = b ? "Running" : "Idle";
     if (b) setStatus(c.statusText || thinking());
   }
@@ -2225,6 +2268,7 @@
   }));
 
   function showAgent(c, aid) {
+    if (aid && !c.agents[aid]) return alertNotice(tr("This subagent tab was removed.", "این تب زیرعامل حذف شده است."));
     c.viewAgent = aid || null;
     switchView("chat");
     refreshChatUi();
@@ -2243,6 +2287,19 @@
       switchView("chat");
       return activate(tab.dataset.chat);
     }
+    const uact = t.closest("[data-uact]");
+    if (uact) {
+      const m = uact.closest(".msg.user");
+      if (!m || typeof m._text !== "string") return;
+      if (uact.dataset.uact === "copy") {
+        toIde({ type: "copy", text: m._text });
+        uact.textContent = "✓";
+        setTimeout(() => (uact.textContent = "⧉"), 1000);
+      } else if (uact.dataset.uact === "rerun") send(m._text);
+      return;
+    }
+    const delAgent = t.closest("[data-del-agent]");
+    if (delAgent) return removeAgent(chat(), delAgent.dataset.delAgent);
     const sub = t.closest("#subTabs .pill");
     if (sub) return showAgent(chat(), sub.dataset.agent);
     const openAgent = t.closest("[data-open-agent]");

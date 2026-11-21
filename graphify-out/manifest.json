@@ -18,15 +18,15 @@
     "semantic_hash": ""
   },
   "src/main/resources/webview/chat.js": {
-    "mtime": 1795069574.528181,
-    "seen": 1795069595.157342,
-    "ast_hash": "f85362cfb26bebb13b665fc34c9c1ac9",
+    "mtime": 1795270887.6832478,
+    "seen": 1795270900.330356,
+    "ast_hash": "7cc5d82c85f03be1f72744df35947b95",
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1795069574.5038805,
-    "seen": 1795069595.157352,
-    "ast_hash": "7e57faea421dc47ae34b6c660c07f01d",
+    "mtime": 1795158344.579058,
+    "seen": 1795270561.106533,
+    "ast_hash": "d2a83c7abb0493e4f141de811b5e6bf1",
     "semantic_hash": ""
   },
   "src/main/resources/webview/Vazirmatn-OFL.txt": {
@@ -237,6 +237,24 @@
     "mtime": 1795067524.377013,
     "seen": 1795069595.1573498,
     "ast_hash": "26278dd93da51eb7b4266579eaaed738",
+    "semantic_hash": ""
+  },
+  "README.en.md": {
+    "mtime": 1795158344.5694017,
+    "seen": 1795270561.106532,
+    "ast_hash": "88fec5689413d16d701e1cee38d190ee",
+    "semantic_hash": ""
+  },
+  "docs/README.md": {
+    "mtime": 1795270577.457644,
+    "seen": 1795270900.3303711,
+    "ast_hash": "cf67370723a2d899155855ee50895826",
+    "semantic_hash": ""
+  },
+  "docs/subagent-tabs.md": {
+    "mtime": 1795270575.648838,
+    "seen": 1795270900.330372,
+    "ast_hash": "abd4a16d3ab6bd0ae3e6cd35b7e130b7",
     "semantic_hash": ""
   }
 }
